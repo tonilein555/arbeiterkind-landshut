@@ -1,115 +1,173 @@
-import Image from "next/image";
-import { Geist, Geist_Mono } from "next/font/google";
+import { useState, useEffect } from 'react';
+import { createClient } from '@supabase/supabase-js';
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
+const supabaseUrl = 'https://mzhnxmgftqxbivecgnna.supabase.co'; 
+const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im16aG54bWdmdHF4Yml2ZWNnbm5hIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI5NTIwODAsImV4cCI6MjA2ODUyODA4MH0.zfwLmqNxCHO-x33Ys0kRKOZg55r4dhDqysKHnRNk4EM';
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+const ADMIN_PASSWORD = 'arbeiterkind2025landshut'; 
 
-export default function Home() {
+export default function App() {
+  const [questions, setQuestions] = useState([]);
+  const [newQuestion, setNewQuestion] = useState('');
+  const [newAnswer, setNewAnswer] = useState({});
+  const [admin, setAdmin] = useState(false);
+  const [loginAttempt, setLoginAttempt] = useState('');
+
+  useEffect(() => {
+    fetchQuestions();
+  }, []);
+
+  async function fetchQuestions() {
+    const { data, error } = await supabase
+      .from('questions')
+      .select('*, answers(*)')
+      .eq('hidden', false)
+      .order('created_at', { ascending: false });
+
+    if (error) console.error('Fehler beim Laden', error);
+    else setQuestions(data);
+  }
+
+  async function submitQuestion() {
+    if (!newQuestion.trim()) return;
+
+    const { error } = await supabase
+      .from('questions')
+      .insert([{ text: newQuestion, category: 'Sonstiges' }]);
+
+    if (error) console.error('Fehler beim Senden', error);
+    else {
+      setNewQuestion('');
+      fetchQuestions();
+    }
+  }
+
+  async function submitAnswer(questionId) {
+    const answerText = newAnswer[questionId];
+    if (!answerText?.trim()) return;
+
+    const { error } = await supabase
+      .from('answers')
+      .insert([{ text: answerText, question_id: questionId, likes: 0 }]);
+
+    if (error) console.error('Fehler beim Antworten', error);
+    else {
+      setNewAnswer((prev) => ({ ...prev, [questionId]: '' }));
+      fetchQuestions();
+      sendEmailNotification(questionId);
+    }
+  }
+
+  async function likeAnswer(answerId) {
+    const { error } = await supabase.rpc('increment_like', { answer_id_input: answerId });
+    if (error) console.error('Fehler beim Liken', error);
+    else fetchQuestions();
+  }
+
+  async function hideQuestion(id) {
+    const { error } = await supabase
+      .from('questions')
+      .update({ hidden: true })
+      .eq('id', id);
+    if (error) console.error('Fehler beim Verstecken', error);
+    else fetchQuestions();
+  }
+
+  function loginAsAdmin() {
+    if (loginAttempt === ADMIN_PASSWORD) {
+      setAdmin(true);
+    } else {
+      alert('Falsches Passwort');
+    }
+  }
+
+  async function sendEmailNotification(questionId) {
+    console.log(`Sende Mail: Neue Antwort zu Frage ${questionId}`);
+  }
+
   return (
-    <div
-      className={`${geistSans.className} ${geistMono.className} font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20`}
-    >
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              pages/index.js
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+    <div className="max-w-2xl mx-auto p-4">
+      <h1 className="text-2xl font-bold mb-4">Frag uns alles!</h1>
+
+      {!admin && (
+        <div className="mb-6">
+          <input
+            type="password"
+            placeholder="Admin-Passwort"
+            value={loginAttempt}
+            onChange={(e) => setLoginAttempt(e.target.value)}
+            className="p-2 border rounded w-full"
+          />
+          <button
+            onClick={loginAsAdmin}
+            className="mt-2 bg-purple-500 text-white px-4 py-2 rounded"
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+            Als Admin einloggen
+          </button>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
+      )}
+
+      <div className="mb-6">
+        <textarea
+          className="w-full p-2 border rounded"
+          placeholder="Deine Frage..."
+          value={newQuestion}
+          onChange={(e) => setNewQuestion(e.target.value)}
+        ></textarea>
+        <button
+          className="mt-2 bg-blue-500 text-white px-4 py-2 rounded"
+          onClick={submitQuestion}
         >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+          Frage absenden
+        </button>
+      </div>
+
+      <div>
+        {questions.map((q) => (
+          <div key={q.id} className="border p-4 mb-4 rounded">
+            <div className="flex justify-between">
+              <p className="font-semibold">{q.text}</p>
+              {admin && (
+                <button
+                  onClick={() => hideQuestion(q.id)}
+                  className="text-sm text-red-600 hover:underline"
+                >
+                  Verstecken
+                </button>
+              )}
+            </div>
+
+            <div className="mt-2 pl-4">
+              {q.answers.map((a) => (
+                <div key={a.id} className="border-t py-2 flex justify-between items-center">
+                  <span>{a.text}</span>
+                  <button
+                    onClick={() => likeAnswer(a.id)}
+                    className="text-sm text-gray-600 hover:text-red-500"
+                  >
+                    ❤️ {a.likes}
+                  </button>
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-2">
+              <textarea
+                className="w-full p-2 border rounded"
+                placeholder="Antwort schreiben..."
+                value={newAnswer[q.id] || ''}
+                onChange={(e) => setNewAnswer({ ...newAnswer, [q.id]: e.target.value })}
+              ></textarea>
+              <button
+                className="mt-1 bg-green-500 text-white px-3 py-1 rounded"
+                onClick={() => submitAnswer(q.id)}
+              >
+                Antwort senden
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
