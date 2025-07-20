@@ -84,8 +84,13 @@ export default function Home() {
         position: 'relative',
       }}
     >
+      {/* Seitentitel */}
+      <h1 style={{ fontSize: 28, marginBottom: 10 }}>
+        Q&A mit ArbeiterKind.de Landshut
+      </h1>
+
       {/* Frage stellen */}
-      <h2>Frag uns alles!</h2>
+      <h2>Stelle uns gerne hier deine Fragen. Wir freuen uns darüber!</h2>
       <textarea
         value={frage}
         onChange={(e) => setFrage(e.target.value)}
@@ -255,6 +260,7 @@ export default function Home() {
     </main>
   )
 }
+
 
 
 
