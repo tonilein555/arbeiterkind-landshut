@@ -15,8 +15,10 @@ export default function App() {
   const [loginAttempt, setLoginAttempt] = useState('');
 
   useEffect(() => {
-    fetchQuestions();
-  }, []);
+    if (admin) {
+      fetchQuestions();
+    }
+  }, [admin]);
 
   async function fetchQuestions() {
     const { data, error } = await supabase
@@ -26,10 +28,9 @@ export default function App() {
       .order('created_at', { ascending: false });
 
     if (error) {
-      console.error('Fehler beim Laden:', error);
+      console.error('Fehler beim Laden', error);
       alert('Fehler beim Laden der Fragen. Siehe Konsole.');
     } else {
-      console.log('Geladene Fragen:', data);
       setQuestions(data);
     }
   }
@@ -42,11 +43,11 @@ export default function App() {
       .insert([{ text: newQuestion, category: 'Sonstiges' }]);
 
     if (error) {
-      console.error('Fehler beim Senden:', error);
-      alert('Fehler beim Senden der Frage.');
+      console.error('Fehler beim Senden', error);
+      alert('Fehler beim Absenden der Frage.');
     } else {
       setNewQuestion('');
-      fetchQuestions();
+      if (admin) fetchQuestions();
     }
   }
 
@@ -59,7 +60,7 @@ export default function App() {
       .insert([{ text: answerText, question_id: questionId, likes: 0 }]);
 
     if (error) {
-      console.error('Fehler beim Antworten:', error);
+      console.error('Fehler beim Antworten', error);
       alert('Fehler beim Absenden der Antwort.');
     } else {
       setNewAnswer((prev) => ({ ...prev, [questionId]: '' }));
@@ -70,11 +71,8 @@ export default function App() {
 
   async function likeAnswer(answerId) {
     const { error } = await supabase.rpc('increment_like', { answer_id_input: answerId });
-    if (error) {
-      console.error('Fehler beim Liken:', error);
-    } else {
-      fetchQuestions();
-    }
+    if (error) console.error('Fehler beim Liken', error);
+    else fetchQuestions();
   }
 
   async function hideQuestion(id) {
@@ -82,11 +80,8 @@ export default function App() {
       .from('questions')
       .update({ hidden: true })
       .eq('id', id);
-    if (error) {
-      console.error('Fehler beim Verstecken:', error);
-    } else {
-      fetchQuestions();
-    }
+    if (error) console.error('Fehler beim Verstecken', error);
+    else fetchQuestions();
   }
 
   function loginAsAdmin() {
@@ -138,36 +133,40 @@ export default function App() {
         </button>
       </div>
 
-      <div>
-        {questions.map((q) => (
-          <div key={q.id} className="border p-4 mb-4 rounded">
-            <div className="flex justify-between">
-              <p className="font-semibold">{q.text}</p>
-              {admin && (
+      {!admin && (
+        <p className="text-center text-gray-400 mt-4">
+          Melde dich als Admin an, um Fragen & Antworten zu sehen.
+        </p>
+      )}
+
+      {admin && (
+        <div>
+          {questions.map((q) => (
+            <div key={q.id} className="border p-4 mb-4 rounded">
+              <div className="flex justify-between">
+                <p className="font-semibold">{q.text}</p>
                 <button
                   onClick={() => hideQuestion(q.id)}
                   className="text-sm text-red-600 hover:underline"
                 >
                   Verstecken
                 </button>
-              )}
-            </div>
+              </div>
 
-            <div className="mt-2 pl-4">
-              {q.answers.map((a) => (
-                <div key={a.id} className="border-t py-2 flex justify-between items-center">
-                  <span>{a.text}</span>
-                  <button
-                    onClick={() => likeAnswer(a.id)}
-                    className="text-sm text-gray-600 hover:text-red-500"
-                  >
-                    ❤️ {a.likes}
-                  </button>
-                </div>
-              ))}
-            </div>
+              <div className="mt-2 pl-4">
+                {q.answers.map((a) => (
+                  <div key={a.id} className="border-t py-2 flex justify-between items-center">
+                    <span>{a.text}</span>
+                    <button
+                      onClick={() => likeAnswer(a.id)}
+                      className="text-sm text-gray-600 hover:text-red-500"
+                    >
+                      ❤️ {a.likes}
+                    </button>
+                  </div>
+                ))}
+              </div>
 
-            {admin && (
               <div className="mt-2">
                 <textarea
                   className="w-full p-2 border rounded"
@@ -182,10 +181,10 @@ export default function App() {
                   Antwort senden
                 </button>
               </div>
-            )}
-          </div>
-        ))}
-      </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
