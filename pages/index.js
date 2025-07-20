@@ -15,14 +15,13 @@ export default function Page() {
   const [answerInputs, setAnswerInputs] = useState({})
   const [showAdminLogin, setShowAdminLogin] = useState(true)
   const [successMessage, setSuccessMessage] = useState('')
-  const [isDark, setIsDark] = useState(false) // ✅ NEU
+  const [isDark, setIsDark] = useState(false)
 
   const ADMIN_PASSWORD = 'arbeiterkind2025landshut'
 
   useEffect(() => {
     fetchQuestions()
 
-    // ✅ Automatischer Theme-Wechsel
     const mql = window.matchMedia('(prefers-color-scheme: dark)')
     const handleChange = (e) => setIsDark(e.matches)
     setIsDark(mql.matches)
@@ -199,15 +198,16 @@ export default function Page() {
             {answer ? (
               <div
                 style={{
-                  backgroundColor: isDark ? '#222' : '#e5e5e5',
+                  backgroundColor: isDark ? '#111' : '#e5e5e5',
                   padding: 10,
                   borderRadius: 4,
                   marginTop: 8,
                   color: isDark ? '#fff' : '#000',
+                  border: isDark ? '1px solid #444' : '1px solid #ccc',
                 }}
               >
                 {answer.text}
-                <p style={{ fontSize: 12, color: '#888', marginTop: 6 }}>
+                <p style={{ fontSize: 12, color: isDark ? '#ccc' : '#666', marginTop: 6 }}>
                   Beantwortet am:{' '}
                   {new Date(answer.created_at).toLocaleDateString()}
                 </p>
