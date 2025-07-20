@@ -114,7 +114,7 @@ export default function Page() {
         Q&A mit ArbeiterKind.de Landshut
       </h1>
       <p style={{ textAlign: 'center', marginBottom: 20 }}>
-        Stelle uns gerne hier deine Fragen. Wir freuen uns darüber!
+        Stell' uns gerne hier Deine Fragen. Wir freuen uns darüber!
       </p>
 
       {!admin && (
