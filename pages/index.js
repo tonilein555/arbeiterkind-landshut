@@ -118,7 +118,7 @@ export default function Page() {
       </p>
 
       {!admin && (
-        <>
+        <div style={{ alignSelf: 'flex-start', width: '100%' }}>
           <textarea
             value={newQuestion}
             onChange={(e) => setNewQuestion(e.target.value)}
@@ -149,7 +149,7 @@ export default function Page() {
           >
             Frage absenden
           </button>
-        </>
+        </div>
       )}
 
       {questions.map((q) => {
@@ -302,6 +302,7 @@ export default function Page() {
     </main>
   )
 }
+
 
 
 
