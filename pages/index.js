@@ -144,7 +144,7 @@ export default function Page() {
               padding: '10px 20px',
               borderRadius: 4,
               cursor: 'pointer',
-              marginBottom: 30,
+              marginBottom: 20,
             }}
           >
             Frage absenden
