@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { createClient } from '@supabase/supabase-js';
 
 const supabaseUrl = 'https://mzhnxmgftqxbivecgnna.supabase.co';
-const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im16aG54bWdmdHF4Yml2ZWNnbm5hIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI5NTIwODAsImV4cCI6MjA2ODUyODA4MH0.zfwLmqNxCHO-x33Ys0kRKOZg55r4dhDqysKHnRNk4EM'; 
+const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im16aG54bWdmdHF4Yml2ZWNnbm5hIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI5NTIwODAsImV4cCI6MjA2ODUyODA4MH0.zfwLmqNxCHO-x33Ys0kRKOZg55r4dhDqysKHnRNk4EM';
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 const ADMIN_PASSWORD = 'arbeiterkind2025landshut';
@@ -109,35 +109,7 @@ export default function App() {
     <div className="max-w-2xl mx-auto p-4 text-white dark:text-white">
       <h1 className="text-2xl font-bold mb-4 text-center">Frag uns alles!</h1>
 
-      {!admin && (
-        <div className="mb-6">
-          <input
-            type="password"
-            placeholder="Admin-Passwort"
-            value={loginAttempt}
-            onChange={(e) => setLoginAttempt(e.target.value)}
-            className="p-2 border border-gray-400 dark:border-gray-600 rounded w-full bg-black text-white"
-          />
-          <button
-            onClick={loginAsAdmin}
-            className="mt-2 bg-purple-500 text-white px-4 py-2 rounded"
-          >
-            Als Admin einloggen
-          </button>
-        </div>
-      )}
-
-      {admin && (
-        <div className="mb-6">
-          <button
-            onClick={logout}
-            className="bg-gray-600 text-white px-4 py-2 rounded"
-          >
-            Logout
-          </button>
-        </div>
-      )}
-
+      {/* Frage stellen – nur wenn nicht eingeloggt */}
       {!admin && (
         <div className="mb-6">
           <textarea
@@ -158,6 +130,7 @@ export default function App() {
         </div>
       )}
 
+      {/* Fragen und Antworten anzeigen */}
       <div>
         {questions
           .filter((q) => admin || (q.answers && q.answers.length > 0))
@@ -195,6 +168,7 @@ export default function App() {
                 ))}
               </div>
 
+              {/* Antwortfeld für Admin */}
               {admin && (
                 <div className="mt-2">
                   <textarea
@@ -214,9 +188,41 @@ export default function App() {
             </div>
           ))}
       </div>
+
+      {/* Admin Login/Logout – ganz unten */}
+      {!admin && (
+        <div className="mb-6 mt-10">
+          <input
+            type="password"
+            placeholder="Admin-Passwort"
+            value={loginAttempt}
+            onChange={(e) => setLoginAttempt(e.target.value)}
+            className="p-2 border border-gray-400 dark:border-gray-600 rounded w-full bg-black text-white"
+          />
+          <button
+            onClick={loginAsAdmin}
+            className="mt-2 bg-purple-500 text-white px-4 py-2 rounded"
+          >
+            Als Admin einloggen
+          </button>
+        </div>
+      )}
+
+      {admin && (
+        <div className="mb-6 mt-10">
+          <button
+            onClick={logout}
+            className="bg-gray-600 text-white px-4 py-2 rounded"
+          >
+            Logout
+          </button>
+        </div>
+      )}
     </div>
   );
 }
+
+
 
 
 
