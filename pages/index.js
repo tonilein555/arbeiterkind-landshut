@@ -1,74 +1,95 @@
-import { useState, useEffect } from 'react'
+'use client'
+import { useEffect, useState } from 'react'
 import { createClient } from '@supabase/supabase-js'
 
-const supabaseUrl = 'https://mzhnxmgftqxbivecgnna.supabase.co'
-const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im16aG54bWdmdHF4Yml2ZWNnbm5hIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI5NTIwODAsImV4cCI6MjA2ODUyODA4MH0.zfwLmqNxCHO-x33Ys0kRKOZg55r4dhDqysKHnRNk4EM'
-const supabase = createClient(supabaseUrl, supabaseAnonKey)
+const supabase = createClient(
+  'https://mzhnxmgftqxbivecgnna.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im16aG54bWdmdHF4Yml2ZWNnbm5hIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI5NTIwODAsImV4cCI6MjA2ODUyODA4MH0.zfwLmqNxCHO-x33Ys0kRKOZg55r4dhDqysKHnRNk4EM'
+)
 
-const ADMIN_PASSWORD = 'arbeiterkind2025landshut'
-
-export default function Home() {
-  const [fragen, setFragen] = useState([])
-  const [frage, setFrage] = useState('')
+export default function Page() {
+  const [questions, setQuestions] = useState([])
+  const [newQuestion, setNewQuestion] = useState('')
   const [admin, setAdmin] = useState(false)
-  const [password, setPassword] = useState('')
+  const [passwordInput, setPasswordInput] = useState('')
+  const [answerInputs, setAnswerInputs] = useState({})
+
+  const ADMIN_PASSWORD = 'arbeiterkind2025landshut'
 
   useEffect(() => {
-    ladeFragen()
+    fetchQuestions()
   }, [])
 
-  async function ladeFragen() {
+  async function fetchQuestions() {
     const { data, error } = await supabase
       .from('questions')
       .select('*, answers(*)')
       .eq('hidden', false)
       .order('created_at', { ascending: false })
+
     if (error) {
       console.error('Fehler beim Laden', error)
     } else {
-      setFragen(data)
+      setQuestions(data)
     }
   }
 
-  async function sendeFrage() {
-    if (!frage.trim()) return
-    const { error } = await supabase.from('questions').insert({ text: frage })
+  async function submitQuestion() {
+    if (!newQuestion.trim()) return
+
+    const { error } = await supabase.from('questions').insert({
+      text: newQuestion,
+      hidden: false,
+    })
+
     if (error) {
-      alert('Fehler beim Senden der Frage')
+      console.error('Fehler beim Senden der Frage', error)
     } else {
-      setFrage('')
-      ladeFragen()
+      setNewQuestion('')
+      fetchQuestions()
     }
   }
 
-  async function antworte(questionId, text) {
-    if (!text.trim()) return
+  async function submitAnswer(questionId) {
+    const text = answerInputs[questionId]
+    if (!text) return
+
     const { error } = await supabase.from('answers').insert({
       text,
       question_id: questionId,
     })
+
     if (error) {
-      alert('Fehler beim Senden der Antwort')
+      console.error('Fehler beim Senden der Antwort', error)
     } else {
-      ladeFragen()
+      setAnswerInputs({ ...answerInputs, [questionId]: '' })
+      fetchQuestions()
     }
   }
 
-  async function versteckeFrage(id) {
-    await supabase.from('questions').update({ hidden: true }).eq('id', id)
-    ladeFragen()
+  async function hideQuestion(id) {
+    const { error } = await supabase
+      .from('questions')
+      .update({ hidden: true })
+      .eq('id', id)
+
+    if (error) {
+      console.error('Fehler beim Verstecken', error)
+    } else {
+      fetchQuestions()
+    }
   }
 
-  function login() {
-    if (password === ADMIN_PASSWORD) {
+  function handleLogin() {
+    if (passwordInput === ADMIN_PASSWORD) {
       setAdmin(true)
-      setPassword('')
+      setPasswordInput('')
     } else {
       alert('Falsches Passwort')
     }
   }
 
-  function logout() {
+  function handleLogout() {
     setAdmin(false)
   }
 
@@ -84,184 +105,204 @@ export default function Home() {
         paddingTop: 60,
         fontFamily: 'Arial, sans-serif',
         position: 'relative',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
       }}
     >
-      {/* Seitentitel */}
-      <h1 style={{ fontSize: 28, marginBottom: 10 }}>
+      <h1 style={{ fontSize: 28, fontWeight: 'bold', textAlign: 'center' }}>
         Q&A mit ArbeiterKind.de Landshut
       </h1>
+      <p style={{ textAlign: 'center', marginBottom: 20 }}>
+        Stelle uns gerne hier deine Fragen. Wir freuen uns darüber!
+      </p>
 
-      {/* Frage stellen */}
-      <h2>Stelle uns gerne hier deine Fragen. Wir freuen uns darüber!</h2>
-      <textarea
-        value={frage}
-        onChange={(e) => setFrage(e.target.value)}
-        placeholder="Deine Frage..."
-        style={{
-          width: '100%',
-          padding: 10,
-          borderRadius: 4,
-          marginBottom: 10,
-          border: '1px solid #ccc',
-          background: '#111',
-          color: 'white',
-        }}
-      />
-      <br />
-      <button
-        onClick={sendeFrage}
-        style={{
-          padding: '10px 20px',
-          background: '#007bff',
-          color: 'white',
-          border: 'none',
-          borderRadius: 4,
-          cursor: 'pointer',
-        }}
-      >
-        Frage absenden
-      </button>
+      {!admin && (
+        <>
+          <textarea
+            value={newQuestion}
+            onChange={(e) => setNewQuestion(e.target.value)}
+            placeholder="Deine Frage..."
+            style={{
+              width: '100%',
+              height: 80,
+              padding: 10,
+              fontSize: 16,
+              borderRadius: 4,
+              border: '1px solid #555',
+              backgroundColor: '#111',
+              color: 'white',
+              marginBottom: 10,
+            }}
+          />
+          <button
+            onClick={submitQuestion}
+            style={{
+              backgroundColor: '#007bff',
+              color: 'white',
+              border: 'none',
+              padding: '10px 20px',
+              borderRadius: 4,
+              cursor: 'pointer',
+              marginBottom: 30,
+            }}
+          >
+            Frage absenden
+          </button>
+        </>
+      )}
 
-      {/* Fragen und Antworten */}
-      <div style={{ marginTop: 40 }}>
-        {fragen.map((frage) => (
+      {questions.map((q) => {
+        const answer = q.answers?.[0]
+        return (
           <div
-            key={frage.id}
+            key={q.id}
             style={{
               border: '1px solid #444',
               borderRadius: 6,
-              padding: 10,
+              padding: 12,
               marginBottom: 20,
+              width: '100%',
             }}
           >
-            <strong>{frage.text}</strong>
-            <div style={{ fontSize: 12, color: '#bbb' }}>
-              Eingereicht am:{' '}
-              {new Date(frage.created_at).toLocaleDateString('de-DE')}
-            </div>
-
-            {frage.answers.length > 0 ? (
+            <p style={{ fontWeight: 'bold' }}>{q.text}</p>
+            <p style={{ fontSize: 12, color: '#aaa' }}>
+              Eingereicht am: {new Date(q.created_at).toLocaleDateString()}
+            </p>
+            {answer ? (
               <div
                 style={{
-                  background: '#222',
+                  backgroundColor: '#222',
                   padding: 10,
-                  marginTop: 10,
                   borderRadius: 4,
+                  marginTop: 8,
                 }}
               >
-                {frage.answers[0].text}
-                <div style={{ fontSize: 12, color: '#999', marginTop: 5 }}>
+                {answer.text}
+                <p style={{ fontSize: 12, color: '#888', marginTop: 6 }}>
                   Beantwortet am:{' '}
-                  {new Date(frage.answers[0].created_at).toLocaleDateString(
-                    'de-DE'
-                  )}
-                </div>
+                  {new Date(answer.created_at).toLocaleDateString()}
+                </p>
               </div>
             ) : admin ? (
-              <div style={{ marginTop: 10 }}>
+              <>
                 <textarea
+                  value={answerInputs[q.id] || ''}
+                  onChange={(e) =>
+                    setAnswerInputs({ ...answerInputs, [q.id]: e.target.value })
+                  }
                   placeholder="Antwort schreiben..."
-                  onBlur={(e) => antworte(frage.id, e.target.value)}
                   style={{
                     width: '100%',
-                    padding: 8,
+                    height: 60,
+                    marginTop: 10,
                     borderRadius: 4,
-                    border: '1px solid #666',
-                    background: '#111',
+                    padding: 8,
+                    backgroundColor: '#111',
                     color: 'white',
+                    border: '1px solid #555',
                   }}
                 />
-              </div>
+                <button
+                  onClick={() => submitAnswer(q.id)}
+                  style={{
+                    marginTop: 8,
+                    backgroundColor: 'green',
+                    color: 'white',
+                    padding: '8px 16px',
+                    border: 'none',
+                    borderRadius: 4,
+                    cursor: 'pointer',
+                  }}
+                >
+                  Antwort senden
+                </button>
+                <button
+                  onClick={() => hideQuestion(q.id)}
+                  style={{
+                    float: 'right',
+                    marginTop: 8,
+                    color: 'red',
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
+                  }}
+                >
+                  Verstecken
+                </button>
+              </>
             ) : null}
-
-            {/* Verstecken-Button für Admin */}
-            {admin && (
-              <button
-                onClick={() => versteckeFrage(frage.id)}
-                style={{
-                  marginTop: 8,
-                  padding: 5,
-                  background: 'crimson',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: 4,
-                  cursor: 'pointer',
-                  fontSize: 12,
-                }}
-              >
-                Verstecken
-              </button>
-            )}
           </div>
-        ))}
-      </div>
+        )
+      })}
 
-      {/* Admin Panel rechts unten */}
-      <div
-        style={{
-          position: 'fixed',
-          bottom: 20,
-          right: 20,
-          background: '#222',
-          padding: 20,
-          borderRadius: 8,
-          boxShadow: '0 0 10px rgba(0,0,0,0.5)',
-          zIndex: 999,
-          width: 250,
-        }}
-      >
-        {!admin ? (
-          <>
-            <input
-              type="password"
-              placeholder="Admin-Passwort"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              style={{
-                width: '100%',
-                padding: 10,
-                borderRadius: 4,
-                marginBottom: 10,
-                border: '1px solid #ccc',
-                background: '#111',
-                color: 'white',
-              }}
-            />
-            <button
-              onClick={login}
-              style={{
-                width: '100%',
-                padding: '10px',
-                background: 'mediumorchid',
-                color: 'white',
-                border: 'none',
-                borderRadius: 4,
-                cursor: 'pointer',
-              }}
-            >
-              Als Admin einloggen
-            </button>
-          </>
-        ) : (
-          <button
-            onClick={logout}
+      {/* Admin Login unten rechts */}
+      {!admin && (
+        <div
+          style={{
+            position: 'fixed',
+            bottom: 20,
+            right: 20,
+            backgroundColor: '#222',
+            padding: 16,
+            borderRadius: 8,
+            width: 260,
+          }}
+        >
+          <input
+            type="password"
+            value={passwordInput}
+            onChange={(e) => setPasswordInput(e.target.value)}
+            placeholder="Admin-Passwort"
             style={{
               width: '100%',
-              padding: '10px',
-              background: 'gray',
+              padding: 8,
+              marginBottom: 8,
+              backgroundColor: '#111',
+              border: '1px solid #555',
               color: 'white',
+              borderRadius: 4,
+            }}
+          />
+          <button
+            onClick={handleLogin}
+            style={{
+              backgroundColor: 'mediumorchid',
+              color: 'white',
+              width: '100%',
+              padding: 10,
               border: 'none',
               borderRadius: 4,
               cursor: 'pointer',
             }}
           >
-            Logout
+            Als Admin einloggen
           </button>
-        )}
-      </div>
+        </div>
+      )}
+
+      {admin && (
+        <button
+          onClick={handleLogout}
+          style={{
+            position: 'fixed',
+            top: 20,
+            right: 20,
+            backgroundColor: '#444',
+            color: 'white',
+            padding: '8px 16px',
+            border: 'none',
+            borderRadius: 4,
+            cursor: 'pointer',
+          }}
+        >
+          Logout
+        </button>
+      )}
     </main>
   )
 }
+
 
 
 
