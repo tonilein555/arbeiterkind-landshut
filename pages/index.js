@@ -78,10 +78,11 @@ export default function Home() {
         background: 'var(--background)',
         color: 'white',
         minHeight: '100vh',
-        paddingTop: 60,
-        padding: 20,
         maxWidth: 600,
         margin: '0 auto',
+        padding: 20,
+        paddingTop: 60,
+        fontFamily: 'Arial, sans-serif',
         position: 'relative',
       }}
     >
