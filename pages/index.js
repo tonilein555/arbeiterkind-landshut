@@ -1,194 +1,227 @@
-import { useEffect, useState } from "react";
-import { createClient } from "@supabase/supabase-js";
+import { useState, useEffect } from 'react';
+import { createClient } from '@supabase/supabase-js';
 
-const supabase = createClient(
-  "https://mzhnxmgftqxbivecgnna.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im16aG54bWdmdHF4Yml2ZWNnbm5hIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI5NTIwODAsImV4cCI6MjA2ODUyODA4MH0.zfwLmqNxCHO-x33Ys0kRKOZg55r4dhDqysKHnRNk4EM"
-);
+const supabaseUrl = 'https://mzhnxmgftqxbivecgnna.supabase.co';
+const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im16aG54bWdmdHF4Yml2ZWNnbm5hIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI5NTIwODAsImV4cCI6MjA2ODUyODA4MH0.zfwLmqNxCHO-x33Ys0kRKOZg55r4dhDqysKHnRNk4EM';
+const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
-export default function Home() {
-  const [frage, setFrage] = useState("");
-  const [antworten, setAntworten] = useState({});
-  const [fragen, setFragen] = useState([]);
-  const [antwortText, setAntwortText] = useState({});
+const ADMIN_PASSWORD = 'arbeiterkind2025landshut';
+
+export default function App() {
+  const [questions, setQuestions] = useState([]);
+  const [newQuestion, setNewQuestion] = useState('');
+  const [newAnswer, setNewAnswer] = useState({});
   const [admin, setAdmin] = useState(false);
-  const [passwort, setPasswort] = useState("");
-  const [nachricht, setNachricht] = useState("");
+  const [loginAttempt, setLoginAttempt] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
 
   useEffect(() => {
-    ladeFragen();
+    fetchQuestions();
   }, []);
 
-  async function ladeFragen() {
+  async function fetchQuestions() {
     const { data, error } = await supabase
-      .from("questions")
-      .select("*, answers(*)")
-      .eq("hidden", false)
-      .order("created_at", { ascending: false });
+      .from('questions')
+      .select('*, answers(*)')
+      .eq('hidden', false)
+      .order('created_at', { ascending: false });
 
     if (error) {
-      console.error("Fehler beim Laden", error);
+      console.error('Fehler beim Laden', error);
     } else {
-      setFragen(data);
+      setQuestions(data);
     }
   }
 
-  async function frageAbschicken() {
-    if (!frage.trim()) return;
+  async function submitQuestion() {
+    if (!newQuestion.trim()) return;
 
-    const { error } = await supabase.from("questions").insert({ text: frage });
-    if (error) {
-      alert("Fehler beim Absenden.");
-    } else {
-      setNachricht("Frage erfolgreich gesendet!");
-      setFrage("");
-      ladeFragen();
-      setTimeout(() => setNachricht(""), 2000);
-    }
-  }
-
-  async function antworteSenden(question_id) {
-    if (!antwortText[question_id]?.trim()) return;
-
-    const { error } = await supabase.from("answers").insert({
-      text: antwortText[question_id],
-      question_id,
-    });
+    const { error } = await supabase
+      .from('questions')
+      .insert([{ text: newQuestion, category: 'Sonstiges' }]);
 
     if (error) {
-      alert("Fehler beim Senden der Antwort.");
+      console.error('Fehler beim Senden', error);
     } else {
-      setAntwortText((prev) => ({ ...prev, [question_id]: "" }));
-      ladeFragen();
+      setNewQuestion('');
+      setSuccessMessage('Frage erfolgreich gesendet!');
+      fetchQuestions();
+      setTimeout(() => setSuccessMessage(''), 3000);
     }
   }
 
-  async function toggleHidden(id, hidden) {
-    await supabase.from("questions").update({ hidden: !hidden }).eq("id", id);
-    ladeFragen();
-  }
+  async function submitAnswer(questionId) {
+    const answerText = newAnswer[questionId];
+    if (!answerText?.trim()) return;
 
-  async function likeFrage(id) {
-    const likedKey = `liked-${id}`;
-    if (localStorage.getItem(likedKey)) return;
+    const { error } = await supabase
+      .from('answers')
+      .insert([{ text: answerText, question_id: questionId, likes: 0 }]);
 
-    const frage = fragen.find((f) => f.id === id);
-    const neueLikes = (frage.likes || 0) + 1;
-
-    const { error } = await supabase.from("questions").update({ likes: neueLikes }).eq("id", id);
-    if (!error) {
-      localStorage.setItem(likedKey, "true");
-      ladeFragen();
+    if (error) {
+      console.error('Fehler beim Antworten', error);
+    } else {
+      setNewAnswer((prev) => ({ ...prev, [questionId]: '' }));
+      fetchQuestions();
+      sendEmailNotification(questionId);
     }
   }
 
-  function login() {
-    if (passwort === "admin123") {
+  async function likeAnswer(answerId) {
+    const { error } = await supabase.rpc('increment_like', { answer_id_input: answerId });
+    if (error) console.error('Fehler beim Liken', error);
+    else fetchQuestions();
+  }
+
+  async function hideQuestion(id) {
+    const { error } = await supabase
+      .from('questions')
+      .update({ hidden: true })
+      .eq('id', id);
+
+    if (error) console.error('Fehler beim Verstecken', error);
+    else fetchQuestions();
+  }
+
+  function loginAsAdmin() {
+    if (loginAttempt === ADMIN_PASSWORD) {
       setAdmin(true);
-      setPasswort("");
     } else {
-      alert("Falsches Passwort");
+      alert('Falsches Passwort');
     }
   }
 
   function logout() {
     setAdmin(false);
+    setLoginAttempt('');
+  }
+
+  async function sendEmailNotification(questionId) {
+    console.log(`Sende Mail: Neue Antwort zu Frage ${questionId}`);
+  }
+
+  function formatDate(dateStr) {
+    const date = new Date(dateStr);
+    return date.toLocaleDateString('de-DE');
   }
 
   return (
-    <main style={{ background: "var(--background)", color: "white", minHeight: "100vh", padding: 20 }}>
-      <h1>Frag uns alles!</h1>
+    <div className="max-w-2xl mx-auto p-4 text-white dark:text-white">
+      <h1 className="text-2xl font-bold mb-4 text-center">Frag uns alles!</h1>
 
-      {/* Frage absenden */}
+      {/* Frage stellen – nur wenn nicht eingeloggt */}
       {!admin && (
-        <>
+        <div className="mb-6">
           <textarea
+            className="w-full p-2 border border-gray-400 dark:border-gray-600 rounded bg-black text-white"
             placeholder="Deine Frage..."
-            value={frage}
-            onChange={(e) => setFrage(e.target.value)}
-            style={{ display: "block", width: "100%", padding: 10, marginBottom: 10, border: "1px solid gray", borderRadius: 4 }}
-          />
-          <button onClick={frageAbschicken} style={{ padding: "10px 20px", background: "dodgerblue", color: "white", border: "none", borderRadius: 4 }}>
+            value={newQuestion}
+            onChange={(e) => setNewQuestion(e.target.value)}
+          ></textarea>
+          <button
+            className="mt-2 bg-blue-500 text-white px-4 py-2 rounded"
+            onClick={submitQuestion}
+          >
             Frage absenden
           </button>
-          {nachricht && <p style={{ color: "lightgreen" }}>{nachricht}</p>}
-        </>
+          {successMessage && (
+            <p className="text-green-400 mt-2">{successMessage}</p>
+          )}
+        </div>
       )}
 
-      {/* Fragen & Antworten */}
-      {fragen.map((frage) => (
-        <div key={frage.id} style={{ border: "1px solid #555", padding: 10, marginTop: 20, borderRadius: 4 }}>
-          <strong>{frage.text}</strong>
-          <p style={{ fontSize: "0.8em", color: "gray" }}>Eingereicht am: {new Date(frage.created_at).toLocaleDateString()}</p>
+      {/* Fragen und Antworten anzeigen */}
+      <div>
+        {questions
+          .filter((q) => admin || (q.answers && q.answers.length > 0))
+          .map((q) => (
+            <div key={q.id} className="border border-gray-700 p-4 mb-4 rounded bg-black">
+              <div className="flex justify-between">
+                <p className="font-semibold">{q.text}</p>
+                {admin && (
+                  <button
+                    onClick={() => hideQuestion(q.id)}
+                    className="text-sm text-red-500 hover:underline"
+                  >
+                    Verstecken
+                  </button>
+                )}
+              </div>
+              <p className="text-sm text-gray-400 mt-1">Eingereicht am: {formatDate(q.created_at)}</p>
 
-          {frage.answers.length > 0 && (
-            <>
-              <div style={{ marginTop: 10, background: "#111", padding: 10, borderRadius: 4 }}>
-                {frage.answers.map((a) => (
-                  <div key={a.id}>
-                    <p style={{ marginBottom: 4 }}>{a.text}</p>
-                    <p style={{ fontSize: "0.75em", color: "gray" }}>
-                      Beantwortet am: {new Date(a.created_at).toLocaleDateString()}
+              <div className="mt-2 pl-2">
+                {q.answers.map((a) => (
+                  <div key={a.id} className="border-t border-gray-600 py-2">
+                    <div className="flex justify-between items-center">
+                      <span>{a.text}</span>
+                      <button
+                        onClick={() => likeAnswer(a.id)}
+                        className="text-sm text-gray-400 hover:text-red-400"
+                      >
+                        ❤️ {a.likes}
+                      </button>
+                    </div>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Beantwortet am: {formatDate(a.created_at)}
                     </p>
                   </div>
                 ))}
               </div>
-            </>
-          )}
 
-          {/* Like Button */}
-          {!admin && frage.answers.length > 0 && (
-            <div style={{ marginTop: 10 }}>
-              <button onClick={() => likeFrage(frage.id)} style={{ background: "transparent", color: "hotpink", border: "none", cursor: "pointer" }}>
-                ❤️ {frage.likes || 0}
-              </button>
+              {/* Antwortfeld für Admin */}
+              {admin && (
+                <div className="mt-2">
+                  <textarea
+                    className="w-full p-2 border border-gray-400 dark:border-gray-600 rounded bg-black text-white"
+                    placeholder="Antwort schreiben..."
+                    value={newAnswer[q.id] || ''}
+                    onChange={(e) => setNewAnswer({ ...newAnswer, [q.id]: e.target.value })}
+                  ></textarea>
+                  <button
+                    className="mt-1 bg-green-500 text-white px-3 py-1 rounded"
+                    onClick={() => submitAnswer(q.id)}
+                  >
+                    Antwort senden
+                  </button>
+                </div>
+              )}
             </div>
-          )}
+          ))}
+      </div>
 
-          {/* Admin Antwortfeld */}
-          {admin && (
-            <>
-              <textarea
-                placeholder="Antwort schreiben..."
-                value={antwortText[frage.id] || ""}
-                onChange={(e) => setAntwortText({ ...antwortText, [frage.id]: e.target.value })}
-                style={{ width: "100%", marginTop: 10, padding: 10, border: "1px solid gray", borderRadius: 4 }}
-              />
-              <button onClick={() => antworteSenden(frage.id)} style={{ marginTop: 5, background: "limegreen", color: "white", padding: "8px 12px", border: "none", borderRadius: 4 }}>
-                Antwort senden
-              </button>
-              <button onClick={() => toggleHidden(frage.id, frage.hidden)} style={{ marginLeft: 10, color: "red", background: "transparent", border: "none" }}>
-                {frage.hidden ? "Einblenden" : "Verstecken"}
-              </button>
-            </>
-          )}
-        </div>
-      ))}
-
-      {/* Admin Login */}
+      {/* Admin Login/Logout – ganz unten */}
       {!admin && (
-        <div style={{ marginTop: 50 }}>
+        <div className="mb-6 mt-10">
           <input
             type="password"
             placeholder="Admin-Passwort"
-            value={passwort}
-            onChange={(e) => setPasswort(e.target.value)}
-            style={{ padding: 10, borderRadius: 4, width: "100%", border: "1px solid gray", marginBottom: 10 }}
+            value={loginAttempt}
+            onChange={(e) => setLoginAttempt(e.target.value)}
+            className="p-2 border border-gray-400 dark:border-gray-600 rounded w-full bg-black text-white"
           />
-          <button onClick={login} style={{ background: "mediumorchid", color: "white", padding: "10px 20px", border: "none", borderRadius: 4 }}>
+          <button
+            onClick={loginAsAdmin}
+            className="mt-2 bg-purple-500 text-white px-4 py-2 rounded"
+          >
             Als Admin einloggen
           </button>
         </div>
       )}
 
       {admin && (
-        <button onClick={logout} style={{ marginTop: 20, padding: "10px 20px", borderRadius: 4 }}>
-          Logout
-        </button>
+        <div className="mb-6 mt-10">
+          <button
+            onClick={logout}
+            className="bg-gray-600 text-white px-4 py-2 rounded"
+          >
+            Logout
+          </button>
+        </div>
       )}
-    </main>
+    </div>
   );
 }
+
 
 
 
