@@ -18,14 +18,9 @@ export default function Page() {
 
   const ADMIN_PASSWORD = 'arbeiterkind2025landshut'
 
-  const isDark =
-    typeof window !== 'undefined' &&
-    window.matchMedia &&
-    window.matchMedia('(prefers-color-scheme: dark)').matches
-
   useEffect(() => {
     fetchQuestions()
-  }, [admin])
+  }, [admin]) // <- neu: aktualisiere Fragen bei Login
 
   async function fetchQuestions() {
     let query = supabase
@@ -61,6 +56,7 @@ export default function Page() {
       setNewQuestion('')
       setSuccessMessage('Frage erfolgreich eingereicht!')
       fetchQuestions()
+
       setTimeout(() => setSuccessMessage(''), 4000)
     }
   }
@@ -109,248 +105,265 @@ export default function Page() {
     setAdmin(false)
   }
 
+  const isDark = typeof window !== 'undefined' &&
+    window.matchMedia &&
+    window.matchMedia('(prefers-color-scheme: dark)').matches
+
   return (
-    <>
-      {/* globaler Style für Placeholder */}
-      <style jsx global>{`
-        textarea::placeholder,
-        input::placeholder {
-          color: ${isDark ? '#ccc' : '#555'};
-        }
-      `}</style>
+    <main
+      style={{
+        background: isDark ? '#000' : '#fff',
+        color: isDark ? '#fff' : '#000',
+        minHeight: '100vh',
+        maxWidth: 600,
+        margin: '0 auto',
+        padding: 20,
+        paddingTop: 60,
+        fontFamily: 'Arial, sans-serif',
+        position: 'relative',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+      }}
+    >
+      <h1 style={{ fontSize: 28, fontWeight: 'bold', textAlign: 'center' }}>
+        Q&amp;A mit ArbeiterKind.de Landshut
+      </h1>
+      <p style={{ textAlign: 'center', marginBottom: 20 }}>
+        Stell&#39; uns gerne hier Deine Fragen. Wir freuen uns darüber!
+      </p>
 
-      <main
-        style={{
-          background: isDark ? '#000' : '#fff',
-          color: isDark ? '#fff' : '#000',
-          minHeight: '100vh',
-          maxWidth: 600,
-          margin: '0 auto',
-          padding: 20,
-          paddingTop: 60,
-          fontFamily: 'Arial, sans-serif',
-          position: 'relative',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-        }}
-      >
-        <h1 style={{ fontSize: 28, fontWeight: 'bold', textAlign: 'center' }}>
-          Q&amp;A mit ArbeiterKind.de Landshut
-        </h1>
-        <p style={{ textAlign: 'center', marginBottom: 20 }}>
-          Stell&#39; uns gerne hier Deine Fragen. Wir freuen uns darüber!
-        </p>
-
-        {!admin && (
-          <div style={{ marginBottom: 20, width: '100%', textAlign: 'left' }}>
-            <textarea
-              value={newQuestion}
-              onChange={(e) => setNewQuestion(e.target.value)}
-              placeholder="Deine Frage..."
+      {!admin && (
+        <div style={{ marginBottom: 20, width: '100%', textAlign: 'left' }}>
+          <textarea
+            value={newQuestion}
+            onChange={(e) => setNewQuestion(e.target.value)}
+            placeholder="Deine Frage..."
+            style={{
+              width: '100%',
+              height: 80,
+              padding: 10,
+              fontSize: 16,
+              borderRadius: 4,
+              border: '1px solid #ccc',
+              backgroundColor: isDark ? '#111' : '#eee',
+              color: isDark ? '#fff' : '#000',
+              marginBottom: 10,
+            }}
+          />
+          <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
+            <button
+              onClick={submitQuestion}
               style={{
-                width: '100%',
-                height: 80,
-                padding: 10,
-                fontSize: 16,
+                backgroundColor: '#007bff',
+                color: 'white',
+                border: 'none',
+                padding: '10px 20px',
                 borderRadius: 4,
-                border: '1px solid #ccc',
-                backgroundColor: isDark ? '#111' : '#eee',
-                color: isDark ? '#fff' : '#000',
-                marginBottom: 10,
-              }}
-            />
-            <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
-              <button
-                onClick={submitQuestion}
-                style={{
-                  backgroundColor: '#007bff',
-                  color: 'white',
-                  border: 'none',
-                  padding: '10px 20px',
-                  borderRadius: 4,
-                  cursor: 'pointer',
-                }}
-              >
-                Frage absenden
-              </button>
-            </div>
-            {successMessage && (
-              <p style={{ color: 'green', marginTop: 10 }}>{successMessage}</p>
-            )}
-          </div>
-        )}
-
-        {questions.map((q) => {
-          const answer = q.answers?.[0]
-          return (
-            <div
-              key={q.id}
-              style={{
-                border: '1px solid #444',
-                borderRadius: 6,
-                padding: 12,
-                marginBottom: 20,
-                width: '100%',
-                backgroundColor: isDark ? '#000' : '#f9f9f9',
+                cursor: 'pointer',
               }}
             >
-              <p style={{ fontWeight: 'bold' }}>{q.text}</p>
-              <p style={{ fontSize: 12, color: '#888' }}>
-                Eingereicht am: {new Date(q.created_at).toLocaleDateString()}
-              </p>
-              {answer ? (
-                <div
-                  style={{
-                    backgroundColor: isDark ? '#222' : '#e5e5e5',
-                    padding: 10,
-                    borderRadius: 4,
-                    marginTop: 8,
-                    color: isDark ? '#fff' : '#000',
-                  }}
-                >
-                  {answer.text}
-                  <p style={{ fontSize: 12, color: '#888', marginTop: 6 }}>
-                    Beantwortet am:{' '}
-                    {new Date(answer.created_at).toLocaleDateString()}
-                  </p>
-                </div>
-              ) : admin ? (
-                <>
-                  <textarea
-                    value={answerInputs[q.id] || ''}
-                    onChange={(e) =>
-                      setAnswerInputs({
-                        ...answerInputs,
-                        [q.id]: e.target.value,
-                      })
-                    }
-                    placeholder="Antwort schreiben..."
-                    style={{
-                      width: '100%',
-                      height: 60,
-                      marginTop: 10,
-                      borderRadius: 4,
-                      padding: 8,
-                      backgroundColor: isDark ? '#111' : '#eee',
-                      color: isDark ? 'white' : 'black',
-                      border: '1px solid #555',
-                    }}
-                  />
-                  <button
-                    onClick={() => submitAnswer(q.id)}
-                    style={{
-                      marginTop: 8,
-                      backgroundColor: 'green',
-                      color: 'white',
-                      padding: '8px 16px',
-                      border: 'none',
-                      borderRadius: 4,
-                      cursor: 'pointer',
-                    }}
-                  >
-                    Antwort senden
-                  </button>
-                  <button
-                    onClick={() => hideQuestion(q.id)}
-                    style={{
-                      float: 'right',
-                      marginTop: 8,
-                      color: 'red',
-                      background: 'none',
-                      border: 'none',
-                      cursor: 'pointer',
-                    }}
-                  >
-                    Verstecken
-                  </button>
-                </>
-              ) : null}
-            </div>
-          )
-        })}
+              Frage absenden
+            </button>
+          </div>
+          {successMessage && (
+            <p style={{ color: 'green', marginTop: 10 }}>{successMessage}</p>
+          )}
+        </div>
+      )}
 
-        {!admin && showAdminLogin && (
+      {questions.map((q) => {
+        const answer = q.answers?.[0]
+        return (
           <div
+            key={q.id}
             style={{
-              position: 'fixed',
-              bottom: 20,
-              right: 20,
-              backgroundColor: isDark ? '#222' : '#f5f5f5',
-              padding: 16,
-              borderRadius: 8,
-              width: 260,
-              boxShadow: '0 0 10px rgba(0,0,0,0.3)',
+              border: '1px solid #444',
+              borderRadius: 6,
+              padding: 12,
+              marginBottom: 20,
+              width: '100%',
+              backgroundColor: isDark ? '#000' : '#f9f9f9',
             }}
           >
-            <button
-              onClick={() => setShowAdminLogin(false)}
-              style={{
-                position: 'absolute',
-                top: 4,
-                right: 8,
-                background: 'none',
-                border: 'none',
-                color: '#888',
-                fontSize: 26,
-                cursor: 'pointer',
-              }}
-              aria-label="Schließen"
-            >
-              ×
-            </button>
-
-            <input
-              type="password"
-              value={passwordInput}
-              onChange={(e) => setPasswordInput(e.target.value)}
-              placeholder="Admin-Passwort"
-              style={{
-                width: '100%',
-                padding: 8,
-                marginBottom: 8,
-                backgroundColor: isDark ? '#111' : '#fff',
-                border: '1px solid #555',
-                color: isDark ? 'white' : 'black',
-                borderRadius: 4,
-              }}
-            />
-            <button
-              onClick={handleLogin}
-              style={{
-                backgroundColor: 'mediumorchid',
-                color: 'white',
-                width: '100%',
-                padding: 10,
-                border: 'none',
-                borderRadius: 4,
-                cursor: 'pointer',
-              }}
-            >
-              Als Admin einloggen
-            </button>
+            <p style={{ fontWeight: 'bold' }}>{q.text}</p>
+            <p style={{ fontSize: 12, color: '#888' }}>
+              Eingereicht am: {new Date(q.created_at).toLocaleDateString()}
+            </p>
+            {answer ? (
+              <div
+                style={{
+                  backgroundColor: isDark ? '#222' : '#e5e5e5',
+                  padding: 10,
+                  borderRadius: 4,
+                  marginTop: 8,
+                  color: isDark ? '#fff' : '#000',
+                }}
+              >
+                {answer.text}
+                <p style={{ fontSize: 12, color: '#888', marginTop: 6 }}>
+                  Beantwortet am:{' '}
+                  {new Date(answer.created_at).toLocaleDateString()}
+                </p>
+              </div>
+            ) : admin ? (
+              <>
+                <textarea
+                  value={answerInputs[q.id] || ''}
+                  onChange={(e) =>
+                    setAnswerInputs({ ...answerInputs, [q.id]: e.target.value })
+                  }
+                  placeholder="Antwort schreiben..."
+                  style={{
+                    width: '100%',
+                    height: 60,
+                    marginTop: 10,
+                    borderRadius: 4,
+                    padding: 8,
+                    backgroundColor: isDark ? '#111' : '#eee',
+                    color: isDark ? 'white' : 'black',
+                    border: '1px solid #555',
+                  }}
+                />
+                <button
+                  onClick={() => submitAnswer(q.id)}
+                  style={{
+                    marginTop: 8,
+                    backgroundColor: 'green',
+                    color: 'white',
+                    padding: '8px 16px',
+                    border: 'none',
+                    borderRadius: 4,
+                    cursor: 'pointer',
+                  }}
+                >
+                  Antwort senden
+                </button>
+                <button
+                  onClick={() => hideQuestion(q.id)}
+                  style={{
+                    float: 'right',
+                    marginTop: 8,
+                    color: 'red',
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
+                  }}
+                >
+                  Verstecken
+                </button>
+              </>
+            ) : null}
           </div>
-        )}
+        )
+      })}
 
-        {admin && (
+      {!admin && showAdminLogin && (
+        <div
+          style={{
+            position: 'fixed',
+            bottom: 20,
+            right: 20,
+            backgroundColor: isDark ? '#222' : '#f5f5f5',
+            padding: 16,
+            borderRadius: 8,
+            width: 260,
+            boxShadow: '0 0 10px rgba(0,0,0,0.3)',
+          }}
+        >
           <button
-            onClick={handleLogout}
+            onClick={() => setShowAdminLogin(false)}
             style={{
-              position: 'fixed',
-              top: 20,
-              right: 20,
-              backgroundColor: '#444',
+              position: 'absolute',
+              top: 4,
+              right: 8,
+              background: 'none',
+              border: 'none',
+              color: '#888',
+              fontSize: 26,
+              cursor: 'pointer',
+            }}
+            aria-label="Schließen"
+          >
+            ×
+          </button>
+
+          <input
+            type="password"
+            value={passwordInput}
+            onChange={(e) => setPasswordInput(e.target.value)}
+            placeholder="Admin-Passwort"
+            style={{
+              width: '100%',
+              padding: 8,
+              marginBottom: 8,
+              backgroundColor: isDark ? '#111' : '#fff',
+              border: '1px solid #555',
+              color: isDark ? 'white' : 'black',
+              borderRadius: 4,
+            }}
+          />
+          <button
+            onClick={handleLogin}
+            style={{
+              backgroundColor: 'mediumorchid',
               color: 'white',
-              padding: '8px 16px',
+              width: '100%',
+              padding: 10,
               border: 'none',
               borderRadius: 4,
               cursor: 'pointer',
             }}
           >
-            Logout
+            Als Admin einloggen
           </button>
-        )}
-      </main>
-    </>
+        </div>
+      )}
+
+      {admin && (
+        <button
+          onClick={handleLogout}
+          style={{
+            position: 'fixed',
+            top: 20,
+            right: 20,
+            backgroundColor: '#444',
+            color: 'white',
+            padding: '8px 16px',
+            border: 'none',
+            borderRadius: 4,
+            cursor: 'pointer',
+          }}
+        >
+          Logout
+        </button>
+      )}
+    </main>
   )
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
