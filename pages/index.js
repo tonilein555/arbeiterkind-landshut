@@ -326,7 +326,7 @@ export default function Page() {
         </div>
       )}
 
-      {admin & (
+      {admin && (
         <button
           onClick={handleLogout}
           style={{
