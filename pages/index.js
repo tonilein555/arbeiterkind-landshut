@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { createClient } from '@supabase/supabase-js';
 
 const supabaseUrl = 'https://mzhnxmgftqxbivecgnna.supabase.co';
-const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im16aG54bWdmdHF4Yml2ZWNnbm5hIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI5NTIwODAsImV4cCI6MjA2ODUyODA4MH0.zfwLmqNxCHO-x33Ys0kRKOZg55r4dhDqysKHnRNk4EM';
+const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im16aG54bWdmdHF4Yml2ZWNnbm5hIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI5NTIwODAsImV4cCI6MjA2ODUyODA4MH0.zfwLmqNxCHO-x33Ys0kRKOZg55r4dhDqysKHnRNk4EM'; 
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 const ADMIN_PASSWORD = 'arbeiterkind2025landshut';
@@ -178,14 +178,19 @@ export default function App() {
 
               <div className="mt-2 pl-2">
                 {q.answers.map((a) => (
-                  <div key={a.id} className="border-t border-gray-600 py-2 flex justify-between items-center">
-                    <span>{a.text}</span>
-                    <button
-                      onClick={() => likeAnswer(a.id)}
-                      className="text-sm text-gray-400 hover:text-red-400"
-                    >
-                      ❤️ {a.likes}
-                    </button>
+                  <div key={a.id} className="border-t border-gray-600 py-2">
+                    <div className="flex justify-between items-center">
+                      <span>{a.text}</span>
+                      <button
+                        onClick={() => likeAnswer(a.id)}
+                        className="text-sm text-gray-400 hover:text-red-400"
+                      >
+                        ❤️ {a.likes}
+                      </button>
+                    </div>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Beantwortet am: {formatDate(a.created_at)}
+                    </p>
                   </div>
                 ))}
               </div>
@@ -212,6 +217,7 @@ export default function App() {
     </div>
   );
 }
+
 
 
 
