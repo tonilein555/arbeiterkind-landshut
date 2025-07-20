@@ -1,5 +1,3 @@
-// Änderung nur fürs Deploy
-
 import { useState, useEffect } from 'react'
 import { createClient } from '@supabase/supabase-js'
 
@@ -27,8 +25,13 @@ export default function App() {
       .eq('hidden', false)
       .order('created_at', { ascending: false });
 
-    if (error) console.error('Fehler beim Laden', error);
-    else setQuestions(data);
+    if (error) {
+      console.error('Fehler beim Laden:', error);
+      alert('Fehler beim Laden der Fragen. Siehe Konsole.');
+    } else {
+      console.log('Geladene Fragen:', data);
+      setQuestions(data);
+    }
   }
 
   async function submitQuestion() {
@@ -38,8 +41,10 @@ export default function App() {
       .from('questions')
       .insert([{ text: newQuestion, category: 'Sonstiges' }]);
 
-    if (error) console.error('Fehler beim Senden', error);
-    else {
+    if (error) {
+      console.error('Fehler beim Senden:', error);
+      alert('Fehler beim Senden der Frage.');
+    } else {
       setNewQuestion('');
       fetchQuestions();
     }
@@ -53,8 +58,10 @@ export default function App() {
       .from('answers')
       .insert([{ text: answerText, question_id: questionId, likes: 0 }]);
 
-    if (error) console.error('Fehler beim Antworten', error);
-    else {
+    if (error) {
+      console.error('Fehler beim Antworten:', error);
+      alert('Fehler beim Absenden der Antwort.');
+    } else {
       setNewAnswer((prev) => ({ ...prev, [questionId]: '' }));
       fetchQuestions();
       sendEmailNotification(questionId);
@@ -63,8 +70,11 @@ export default function App() {
 
   async function likeAnswer(answerId) {
     const { error } = await supabase.rpc('increment_like', { answer_id_input: answerId });
-    if (error) console.error('Fehler beim Liken', error);
-    else fetchQuestions();
+    if (error) {
+      console.error('Fehler beim Liken:', error);
+    } else {
+      fetchQuestions();
+    }
   }
 
   async function hideQuestion(id) {
@@ -72,8 +82,11 @@ export default function App() {
       .from('questions')
       .update({ hidden: true })
       .eq('id', id);
-    if (error) console.error('Fehler beim Verstecken', error);
-    else fetchQuestions();
+    if (error) {
+      console.error('Fehler beim Verstecken:', error);
+    } else {
+      fetchQuestions();
+    }
   }
 
   function loginAsAdmin() {
@@ -154,24 +167,26 @@ export default function App() {
               ))}
             </div>
 
-            <div className="mt-2">
-              <textarea
-                className="w-full p-2 border rounded"
-                placeholder="Antwort schreiben..."
-                value={newAnswer[q.id] || ''}
-                onChange={(e) => setNewAnswer({ ...newAnswer, [q.id]: e.target.value })}
-              ></textarea>
-              <button
-                className="mt-1 bg-green-500 text-white px-3 py-1 rounded"
-                onClick={() => submitAnswer(q.id)}
-              >
-                Antwort senden
-              </button>
-            </div>
+            {admin && (
+              <div className="mt-2">
+                <textarea
+                  className="w-full p-2 border rounded"
+                  placeholder="Antwort schreiben..."
+                  value={newAnswer[q.id] || ''}
+                  onChange={(e) => setNewAnswer({ ...newAnswer, [q.id]: e.target.value })}
+                ></textarea>
+                <button
+                  className="mt-1 bg-green-500 text-white px-3 py-1 rounded"
+                  onClick={() => submitAnswer(q.id)}
+                >
+                  Antwort senden
+                </button>
+              </div>
+            )}
           </div>
         ))}
       </div>
     </div>
   );
 }
-// Trigger Vercel Deploy
+
