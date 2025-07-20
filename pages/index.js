@@ -1,5 +1,4 @@
 'use client'
-'use client'
 import { useEffect, useState } from 'react'
 import { createClient } from '@supabase/supabase-js'
 
@@ -20,14 +19,21 @@ export default function Page() {
 
   useEffect(() => {
     fetchQuestions()
-  }, [])
+  }, [admin])
 
   async function fetchQuestions() {
-    const { data, error } = await supabase
+    let query = supabase
       .from('questions')
       .select('*, answers(*)')
-      .eq('hidden', false)
       .order('created_at', { ascending: false })
+
+    if (!admin) {
+      query = query
+        .eq('hidden', false)
+        .not('answers', 'is', null)
+    }
+
+    const { data, error } = await query
 
     if (error) {
       console.error('Fehler beim Laden', error)
@@ -86,6 +92,7 @@ export default function Page() {
     if (passwordInput === ADMIN_PASSWORD) {
       setAdmin(true)
       setPasswordInput('')
+      fetchQuestions()
     } else {
       alert('Falsches Passwort')
     }
@@ -93,6 +100,7 @@ export default function Page() {
 
   function handleLogout() {
     setAdmin(false)
+    fetchQuestions()
   }
 
   return (
@@ -323,6 +331,7 @@ export default function Page() {
     </main>
   )
 }
+
 
 
 
