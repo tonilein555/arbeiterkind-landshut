@@ -196,7 +196,7 @@ export default function Page() {
               padding: 12,
               marginBottom: 20,
               width: '100%',
-              backgroundColor: isDark ? '#000' : '#f9f9f9',
+              backgroundColor: isDark ? '#000' : '#fb0000ff',
             }}
           >
             <p style={{ fontWeight: 'bold' }}>{q.text}</p>
@@ -210,7 +210,7 @@ export default function Page() {
                   padding: 10,
                   borderRadius: 4,
                   marginTop: 8,
-                  color: isDark ? '#fff' : '#b80000ff',
+                  color: isDark ? '#fff' : '#e5e5e5',
                   border: isDark ? '1px solid #444' : '1px solid #ccc',
                 }}
               >
