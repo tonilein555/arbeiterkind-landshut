@@ -13,11 +13,11 @@ export default function App() {
   const [newAnswer, setNewAnswer] = useState({})
   const [admin, setAdmin] = useState(false)
   const [loginAttempt, setLoginAttempt] = useState('')
-  const [successMessage, setSuccessMessage] = useState('')
+  const [message, setMessage] = useState('')
 
   useEffect(() => {
     fetchQuestions()
-  }, [admin])
+  }, [])
 
   async function fetchQuestions() {
     const { data, error } = await supabase
@@ -30,9 +30,8 @@ export default function App() {
       console.error('Fehler beim Laden', error)
       alert('Fehler beim Laden der Fragen. Siehe Konsole.')
     } else {
-      const filtered = admin
-        ? data
-        : data.filter((q) => q.answers.length > 0)
+      // Nur Fragen mit mind. 1 Antwort anzeigen – außer Admin
+      const filtered = admin ? data : data.filter((q) => q.answers.length > 0)
       setQuestions(filtered)
     }
   }
@@ -48,8 +47,8 @@ export default function App() {
       console.error('Fehler beim Senden', error)
     } else {
       setNewQuestion('')
-      setSuccessMessage('Frage erfolgreich gesendet!')
-      setTimeout(() => setSuccessMessage(''), 3000)
+      setMessage('Frage erfolgreich gesendet!')
+      setTimeout(() => setMessage(''), 3000)
       fetchQuestions()
     }
   }
@@ -67,7 +66,6 @@ export default function App() {
     } else {
       setNewAnswer((prev) => ({ ...prev, [questionId]: '' }))
       fetchQuestions()
-      sendEmailNotification(questionId)
     }
   }
 
@@ -78,10 +76,7 @@ export default function App() {
   }
 
   async function hideQuestion(id) {
-    const { error } = await supabase
-      .from('questions')
-      .update({ hidden: true })
-      .eq('id', id)
+    const { error } = await supabase.from('questions').update({ hidden: true }).eq('id', id)
     if (error) console.error('Fehler beim Verstecken', error)
     else fetchQuestions()
   }
@@ -89,7 +84,7 @@ export default function App() {
   function loginAsAdmin() {
     if (loginAttempt === ADMIN_PASSWORD) {
       setAdmin(true)
-      setLoginAttempt('')
+      fetchQuestions()
     } else {
       alert('Falsches Passwort')
     }
@@ -97,17 +92,14 @@ export default function App() {
 
   function logoutAdmin() {
     setAdmin(false)
-  }
-
-  async function sendEmailNotification(questionId) {
-    console.log(`Sende Mail: Neue Antwort zu Frage ${questionId}`)
+    fetchQuestions()
   }
 
   return (
     <div className="max-w-2xl mx-auto p-4 text-white">
       <h1 className="text-2xl font-bold mb-4">Frag uns alles!</h1>
 
-      {!admin ? (
+      {!admin && (
         <div className="mb-6">
           <input
             type="password"
@@ -123,12 +115,11 @@ export default function App() {
             Als Admin einloggen
           </button>
         </div>
-      ) : (
+      )}
+
+      {admin && (
         <div className="mb-4">
-          <button
-            onClick={logoutAdmin}
-            className="bg-gray-600 text-white px-4 py-2 rounded"
-          >
+          <button onClick={logoutAdmin} className="text-sm text-red-400 hover:underline">
             Logout
           </button>
         </div>
@@ -147,20 +138,28 @@ export default function App() {
         >
           Frage absenden
         </button>
-        {successMessage && (
-          <p className="mt-2 text-green-400">{successMessage}</p>
-        )}
+        {message && <p className="mt-2 text-green-400">{message}</p>}
       </div>
 
       <div>
         {questions.map((q) => (
-          <div key={q.id} className="border p-4 mb-4 rounded">
+          <div key={q.id} className="border border-gray-700 p-4 mb-4 rounded">
             <div className="flex justify-between">
-              <p className="font-semibold">{q.text}</p>
+              <div>
+                <p className="font-semibold">{q.text}</p>
+                <p className="text-sm text-gray-400">
+                  gestellt am{' '}
+                  {new Date(q.created_at).toLocaleDateString('de-DE', {
+                    day: '2-digit',
+                    month: 'long',
+                    year: 'numeric',
+                  })}
+                </p>
+              </div>
               {admin && (
                 <button
                   onClick={() => hideQuestion(q.id)}
-                  className="text-sm text-red-400 hover:underline"
+                  className="text-sm text-red-600 hover:underline"
                 >
                   Verstecken
                 </button>
@@ -169,11 +168,14 @@ export default function App() {
 
             <div className="mt-2 pl-4">
               {q.answers.map((a) => (
-                <div key={a.id} className="border-t py-2 flex justify-between items-center">
+                <div
+                  key={a.id}
+                  className="border-t border-gray-600 py-2 flex justify-between items-center"
+                >
                   <span>{a.text}</span>
                   <button
                     onClick={() => likeAnswer(a.id)}
-                    className="text-sm text-gray-400 hover:text-red-400"
+                    className="text-sm text-gray-400 hover:text-red-500"
                   >
                     ❤️ {a.likes}
                   </button>
@@ -187,7 +189,9 @@ export default function App() {
                   className="w-full p-2 border rounded text-black"
                   placeholder="Antwort schreiben..."
                   value={newAnswer[q.id] || ''}
-                  onChange={(e) => setNewAnswer({ ...newAnswer, [q.id]: e.target.value })}
+                  onChange={(e) =>
+                    setNewAnswer({ ...newAnswer, [q.id]: e.target.value })
+                  }
                 ></textarea>
                 <button
                   className="mt-1 bg-green-500 text-white px-3 py-1 rounded"
@@ -203,5 +207,4 @@ export default function App() {
     </div>
   )
 }
-
 
