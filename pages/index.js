@@ -13,6 +13,7 @@ export default function Page() {
   const [admin, setAdmin] = useState(false)
   const [passwordInput, setPasswordInput] = useState('')
   const [answerInputs, setAnswerInputs] = useState({})
+  const [showAdminLogin, setShowAdminLogin] = useState(true)
 
   const ADMIN_PASSWORD = 'arbeiterkind2025landshut'
 
@@ -111,14 +112,14 @@ export default function Page() {
       }}
     >
       <h1 style={{ fontSize: 28, fontWeight: 'bold', textAlign: 'center' }}>
-        Q&A mit ArbeiterKind.de Landshut
+        Q&amp;A mit ArbeiterKind.de Landshut
       </h1>
       <p style={{ textAlign: 'center', marginBottom: 20 }}>
         Stell' uns gerne hier Deine Fragen. Wir freuen uns darüber!
       </p>
 
       {!admin && (
-        <div style={{ alignSelf: 'flex-start', width: '100%' }}>
+        <div style={{ marginBottom: 20, width: '100%', textAlign: 'left' }}>
           <textarea
             value={newQuestion}
             onChange={(e) => setNewQuestion(e.target.value)}
@@ -135,20 +136,21 @@ export default function Page() {
               marginBottom: 10,
             }}
           />
-          <button
-            onClick={submitQuestion}
-            style={{
-              backgroundColor: '#007bff',
-              color: 'white',
-              border: 'none',
-              padding: '10px 20px',
-              borderRadius: 4,
-              cursor: 'pointer',
-              marginBottom: 20,
-            }}
-          >
-            Frage absenden
-          </button>
+          <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
+            <button
+              onClick={submitQuestion}
+              style={{
+                backgroundColor: '#007bff',
+                color: 'white',
+                border: 'none',
+                padding: '10px 20px',
+                borderRadius: 4,
+                cursor: 'pointer',
+              }}
+            >
+              Frage absenden
+            </button>
+          </div>
         </div>
       )}
 
@@ -189,7 +191,10 @@ export default function Page() {
                 <textarea
                   value={answerInputs[q.id] || ''}
                   onChange={(e) =>
-                    setAnswerInputs({ ...answerInputs, [q.id]: e.target.value })
+                    setAnswerInputs({
+                      ...answerInputs,
+                      [q.id]: e.target.value,
+                    })
                   }
                   placeholder="Antwort schreiben..."
                   style={{
@@ -236,8 +241,8 @@ export default function Page() {
         )
       })}
 
-      {/* Admin Login unten rechts */}
-      {!admin && (
+      {/* Admin Login unten rechts mit X-Button */}
+      {!admin && showAdminLogin && (
         <div
           style={{
             position: 'fixed',
@@ -247,8 +252,26 @@ export default function Page() {
             padding: 16,
             borderRadius: 8,
             width: 260,
+            boxShadow: '0 0 10px rgba(0,0,0,0.3)',
           }}
         >
+          <button
+            onClick={() => setShowAdminLogin(false)}
+            style={{
+              position: 'absolute',
+              top: 4,
+              right: 8,
+              background: 'none',
+              border: 'none',
+              color: '#888',
+              fontSize: 18,
+              cursor: 'pointer',
+            }}
+            aria-label="Schließen"
+          >
+            ×
+          </button>
+
           <input
             type="password"
             value={passwordInput}
@@ -302,6 +325,7 @@ export default function Page() {
     </main>
   )
 }
+
 
 
 
