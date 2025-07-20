@@ -210,7 +210,7 @@ export default function Page() {
                   padding: 10,
                   borderRadius: 4,
                   marginTop: 8,
-                  color: isDark ? '#fff' : '#000',
+                  color: isDark ? '#fff' : '#e5e5e5',
                   border: isDark ? '1px solid #444' : '1px solid #ccc',
                 }}
               >
