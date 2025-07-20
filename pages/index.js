@@ -14,32 +14,35 @@ export default function Page() {
   const [passwordInput, setPasswordInput] = useState('')
   const [answerInputs, setAnswerInputs] = useState({})
   const [showAdminLogin, setShowAdminLogin] = useState(true)
+  const [successMessage, setSuccessMessage] = useState('')
+  const [isDarkMode, setIsDarkMode] = useState(false)
 
   const ADMIN_PASSWORD = 'arbeiterkind2025landshut'
 
   useEffect(() => {
     fetchQuestions()
-  }, [admin])
+
+    // Initial mode
+    const dark = window.matchMedia('(prefers-color-scheme: dark)').matches
+    setIsDarkMode(dark)
+
+    // Listen to changes
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
+    const handler = (e) => setIsDarkMode(e.matches)
+    mediaQuery.addEventListener('change', handler)
+
+    return () => mediaQuery.removeEventListener('change', handler)
+  }, [])
 
   async function fetchQuestions() {
-    let query = supabase
+    const { data, error } = await supabase
       .from('questions')
       .select('*, answers(*)')
+      .eq('hidden', false)
       .order('created_at', { ascending: false })
 
-    if (!admin) {
-      query = query
-        .eq('hidden', false)
-        .not('answers', 'is', null)
-    }
-
-    const { data, error } = await query
-
-    if (error) {
-      console.error('Fehler beim Laden', error)
-    } else {
-      setQuestions(data)
-    }
+    if (error) console.error('Fehler beim Laden', error)
+    else setQuestions(data)
   }
 
   async function submitQuestion() {
@@ -54,7 +57,9 @@ export default function Page() {
       console.error('Fehler beim Senden der Frage', error)
     } else {
       setNewQuestion('')
+      setSuccessMessage('✅ Frage erfolgreich abgesendet!')
       fetchQuestions()
+      setTimeout(() => setSuccessMessage(''), 3000)
     }
   }
 
@@ -67,9 +72,8 @@ export default function Page() {
       question_id: questionId,
     })
 
-    if (error) {
-      console.error('Fehler beim Senden der Antwort', error)
-    } else {
+    if (error) console.error('Fehler beim Senden der Antwort', error)
+    else {
       setAnswerInputs({ ...answerInputs, [questionId]: '' })
       fetchQuestions()
     }
@@ -81,18 +85,14 @@ export default function Page() {
       .update({ hidden: true })
       .eq('id', id)
 
-    if (error) {
-      console.error('Fehler beim Verstecken', error)
-    } else {
-      fetchQuestions()
-    }
+    if (error) console.error('Fehler beim Verstecken', error)
+    else fetchQuestions()
   }
 
   function handleLogin() {
     if (passwordInput === ADMIN_PASSWORD) {
       setAdmin(true)
       setPasswordInput('')
-      fetchQuestions()
     } else {
       alert('Falsches Passwort')
     }
@@ -100,14 +100,19 @@ export default function Page() {
 
   function handleLogout() {
     setAdmin(false)
-    fetchQuestions()
   }
+
+  // Styling based on mode
+  const background = isDarkMode ? '#000' : '#fff'
+  const textColor = isDarkMode ? '#fff' : '#000'
+  const inputBg = isDarkMode ? '#111' : '#f5f5f5'
+  const borderColor = isDarkMode ? '#444' : '#ccc'
 
   return (
     <main
       style={{
-        background: 'var(--background)',
-        color: 'white',
+        background,
+        color: textColor,
         minHeight: '100vh',
         maxWidth: 600,
         margin: '0 auto',
@@ -128,7 +133,7 @@ export default function Page() {
       </p>
 
       {!admin && (
-        <div style={{ marginBottom: 20, width: '100%', textAlign: 'left' }}>
+        <div style={{ marginBottom: 20, width: '100%' }}>
           <textarea
             value={newQuestion}
             onChange={(e) => setNewQuestion(e.target.value)}
@@ -139,9 +144,9 @@ export default function Page() {
               padding: 10,
               fontSize: 16,
               borderRadius: 4,
-              border: '1px solid #555',
-              backgroundColor: '#111',
-              color: 'white',
+              border: `1px solid ${borderColor}`,
+              backgroundColor: inputBg,
+              color: textColor,
               marginBottom: 10,
             }}
           />
@@ -160,6 +165,9 @@ export default function Page() {
               Frage absenden
             </button>
           </div>
+          {successMessage && (
+            <p style={{ color: 'green', marginTop: 10 }}>{successMessage}</p>
+          )}
         </div>
       )}
 
@@ -169,7 +177,7 @@ export default function Page() {
           <div
             key={q.id}
             style={{
-              border: '1px solid #444',
+              border: `1px solid ${borderColor}`,
               borderRadius: 6,
               padding: 12,
               marginBottom: 20,
@@ -177,20 +185,20 @@ export default function Page() {
             }}
           >
             <p style={{ fontWeight: 'bold' }}>{q.text}</p>
-            <p style={{ fontSize: 12, color: '#aaa' }}>
+            <p style={{ fontSize: 12, color: '#888' }}>
               Eingereicht am: {new Date(q.created_at).toLocaleDateString()}
             </p>
             {answer ? (
               <div
                 style={{
-                  backgroundColor: '#222',
+                  backgroundColor: isDarkMode ? '#222' : '#eaeaea',
                   padding: 10,
                   borderRadius: 4,
                   marginTop: 8,
                 }}
               >
                 {answer.text}
-                <p style={{ fontSize: 12, color: '#888', marginTop: 6 }}>
+                <p style={{ fontSize: 12, color: '#666', marginTop: 6 }}>
                   Beantwortet am:{' '}
                   {new Date(answer.created_at).toLocaleDateString()}
                 </p>
@@ -209,9 +217,9 @@ export default function Page() {
                     marginTop: 10,
                     borderRadius: 4,
                     padding: 8,
-                    backgroundColor: '#111',
-                    color: 'white',
-                    border: '1px solid #555',
+                    backgroundColor: inputBg,
+                    color: textColor,
+                    border: `1px solid ${borderColor}`,
                   }}
                 />
                 <button
@@ -247,18 +255,19 @@ export default function Page() {
         )
       })}
 
-      {/* Admin Login unten rechts */}
+      {/* Admin Login Box */}
       {!admin && showAdminLogin && (
         <div
           style={{
             position: 'fixed',
             bottom: 20,
             right: 20,
-            backgroundColor: '#222',
+            backgroundColor: inputBg,
             padding: 16,
             borderRadius: 8,
             width: 260,
             boxShadow: '0 0 10px rgba(0,0,0,0.3)',
+            color: textColor,
           }}
         >
           <button
@@ -269,7 +278,7 @@ export default function Page() {
               right: 8,
               background: 'none',
               border: 'none',
-              color: '#888',
+              color: textColor,
               fontSize: 26,
               cursor: 'pointer',
             }}
@@ -287,9 +296,9 @@ export default function Page() {
               width: '100%',
               padding: 8,
               marginBottom: 8,
-              backgroundColor: '#111',
-              border: '1px solid #555',
-              color: 'white',
+              backgroundColor: inputBg,
+              border: `1px solid ${borderColor}`,
+              color: textColor,
               borderRadius: 4,
             }}
           />
@@ -331,6 +340,7 @@ export default function Page() {
     </main>
   )
 }
+
 
 
 
