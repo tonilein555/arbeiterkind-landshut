@@ -23,10 +23,15 @@ export default function Page() {
     fetchQuestions()
 
     const mql = window.matchMedia('(prefers-color-scheme: dark)')
-    const handleChange = (e) => setIsDark(e.matches)
-    setIsDark(mql.matches)
-    mql.addEventListener('change', handleChange)
+    const handleChange = (e) => {
+      setIsDark(e.matches)
+      document.body.style.backgroundColor = e.matches ? '#000' : '#fff'
+    }
 
+    setIsDark(mql.matches)
+    document.body.style.backgroundColor = mql.matches ? '#000' : '#fff'
+
+    mql.addEventListener('change', handleChange)
     return () => {
       mql.removeEventListener('change', handleChange)
     }
@@ -154,6 +159,9 @@ export default function Page() {
               backgroundColor: isDark ? '#111' : '#eee',
               color: isDark ? '#fff' : '#000',
               marginBottom: 10,
+              '::placeholder': {
+                color: isDark ? '#aaa' : '#888',
+              },
             }}
           />
           <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
@@ -207,7 +215,13 @@ export default function Page() {
                 }}
               >
                 {answer.text}
-                <p style={{ fontSize: 12, color: isDark ? '#ccc' : '#666', marginTop: 6 }}>
+                <p
+                  style={{
+                    fontSize: 12,
+                    color: isDark ? '#ccc' : '#666',
+                    marginTop: 6,
+                  }}
+                >
                   Beantwortet am:{' '}
                   {new Date(answer.created_at).toLocaleDateString()}
                 </p>
@@ -217,7 +231,10 @@ export default function Page() {
                 <textarea
                   value={answerInputs[q.id] || ''}
                   onChange={(e) =>
-                    setAnswerInputs({ ...answerInputs, [q.id]: e.target.value })
+                    setAnswerInputs({
+                      ...answerInputs,
+                      [q.id]: e.target.value,
+                    })
                   }
                   placeholder="Antwort schreiben..."
                   style={{
