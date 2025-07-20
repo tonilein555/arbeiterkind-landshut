@@ -1,63 +1,75 @@
-'use client'
-
 import { useState, useEffect } from 'react'
 import { createClient } from '@supabase/supabase-js'
 
 const supabaseUrl = 'https://mzhnxmgftqxbivecgnna.supabase.co'
 const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im16aG54bWdmdHF4Yml2ZWNnbm5hIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI5NTIwODAsImV4cCI6MjA2ODUyODA4MH0.zfwLmqNxCHO-x33Ys0kRKOZg55r4dhDqysKHnRNk4EM'
-
 const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
 const ADMIN_PASSWORD = 'arbeiterkind2025landshut'
 
-export default function App() {
+export default function Home() {
+  const [fragen, setFragen] = useState([])
+  const [frage, setFrage] = useState('')
   const [admin, setAdmin] = useState(false)
   const [password, setPassword] = useState('')
-  const [frage, setFrage] = useState('')
-  const [fragen, setFragen] = useState([])
-
-  // Frage absenden
-  const sendeFrage = async () => {
-    if (!frage.trim()) return
-    await supabase.from('questions').insert([{ text: frage }])
-    setFrage('')
-    ladeFragen()
-  }
-
-  // Fragen laden
-  const ladeFragen = async () => {
-    const { data, error } = await supabase
-      .from('questions')
-      .select('*, answers(*)')
-      .eq('hidden', false)
-      .order('created_at', { ascending: false })
-
-    if (!error) setFragen(data)
-    else console.error('Fehler beim Laden', error)
-  }
-
-  // Admin Login
-  const login = () => {
-    if (password === ADMIN_PASSWORD) {
-      setAdmin(true)
-      setPassword('')
-    }
-  }
-
-  // Admin Logout
-  const logout = () => {
-    setAdmin(false)
-  }
 
   useEffect(() => {
     ladeFragen()
   }, [])
 
-  // Antwort-Formular (Admin)
-  const antworte = async (questionId, text) => {
+  async function ladeFragen() {
+    const { data, error } = await supabase
+      .from('questions')
+      .select('*, answers(*)')
+      .eq('hidden', false)
+      .order('created_at', { ascending: false })
+    if (error) {
+      console.error('Fehler beim Laden', error)
+    } else {
+      setFragen(data)
+    }
+  }
+
+  async function sendeFrage() {
+    if (!frage.trim()) return
+    const { error } = await supabase.from('questions').insert({ text: frage })
+    if (error) {
+      alert('Fehler beim Senden der Frage')
+    } else {
+      setFrage('')
+      ladeFragen()
+    }
+  }
+
+  async function antworte(questionId, text) {
     if (!text.trim()) return
-    await supabase.from('answers').insert([{ question_id: questionId, text }])
+    const { error } = await supabase.from('answers').insert({
+      text,
+      question_id: questionId,
+    })
+    if (error) {
+      alert('Fehler beim Senden der Antwort')
+    } else {
+      ladeFragen()
+    }
+  }
+
+  async function versteckeFrage(id) {
+    await supabase.from('questions').update({ hidden: true }).eq('id', id)
     ladeFragen()
+  }
+
+  function login() {
+    if (password === ADMIN_PASSWORD) {
+      setAdmin(true)
+      setPassword('')
+    } else {
+      alert('Falsches Passwort')
+    }
+  }
+
+  function logout() {
+    setAdmin(false)
   }
 
   return (
@@ -69,6 +81,7 @@ export default function App() {
         padding: 20,
         maxWidth: 600,
         margin: '0 auto',
+        position: 'relative',
       }}
     >
       {/* Frage stellen */}
@@ -83,6 +96,8 @@ export default function App() {
           borderRadius: 4,
           marginBottom: 10,
           border: '1px solid #ccc',
+          background: '#111',
+          color: 'white',
         }}
       />
       <br />
@@ -100,7 +115,7 @@ export default function App() {
         Frage absenden
       </button>
 
-      {/* Alle Fragen mit Antworten */}
+      {/* Fragen und Antworten */}
       <div style={{ marginTop: 40 }}>
         {fragen.map((frage) => (
           <div
@@ -151,63 +166,96 @@ export default function App() {
                 />
               </div>
             ) : null}
+
+            {/* Verstecken-Button für Admin */}
+            {admin && (
+              <button
+                onClick={() => versteckeFrage(frage.id)}
+                style={{
+                  marginTop: 8,
+                  padding: 5,
+                  background: 'crimson',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: 4,
+                  cursor: 'pointer',
+                  fontSize: 12,
+                }}
+              >
+                Verstecken
+              </button>
+            )}
           </div>
         ))}
       </div>
 
-      {/* Admin Login (nur wenn nicht eingeloggt) */}
-      {!admin && (
-        <div style={{ marginTop: 50 }}>
-          <input
-            type="password"
-            placeholder="Admin-Passwort"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
+      {/* Admin Panel rechts unten */}
+      <div
+        style={{
+          position: 'fixed',
+          bottom: 20,
+          right: 20,
+          background: '#222',
+          padding: 20,
+          borderRadius: 8,
+          boxShadow: '0 0 10px rgba(0,0,0,0.5)',
+          zIndex: 999,
+          width: 250,
+        }}
+      >
+        {!admin ? (
+          <>
+            <input
+              type="password"
+              placeholder="Admin-Passwort"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              style={{
+                width: '100%',
+                padding: 10,
+                borderRadius: 4,
+                marginBottom: 10,
+                border: '1px solid #ccc',
+                background: '#111',
+                color: 'white',
+              }}
+            />
+            <button
+              onClick={login}
+              style={{
+                width: '100%',
+                padding: '10px',
+                background: 'mediumorchid',
+                color: 'white',
+                border: 'none',
+                borderRadius: 4,
+                cursor: 'pointer',
+              }}
+            >
+              Als Admin einloggen
+            </button>
+          </>
+        ) : (
+          <button
+            onClick={logout}
             style={{
               width: '100%',
-              padding: 10,
-              borderRadius: 4,
-              marginBottom: 10,
-              border: '1px solid #ccc',
-            }}
-          />
-          <br />
-          <button
-            onClick={login}
-            style={{
-              padding: '10px 20px',
-              background: 'mediumorchid',
+              padding: '10px',
+              background: 'gray',
               color: 'white',
               border: 'none',
               borderRadius: 4,
               cursor: 'pointer',
             }}
           >
-            Als Admin einloggen
+            Logout
           </button>
-        </div>
-      )}
-
-      {/* Logout Button (nur sichtbar wenn eingeloggt) */}
-      {admin && (
-        <button
-          onClick={logout}
-          style={{
-            marginTop: 30,
-            padding: '10px 20px',
-            background: 'gray',
-            color: 'white',
-            border: 'none',
-            borderRadius: 4,
-            cursor: 'pointer',
-          }}
-        >
-          Logout
-        </button>
-      )}
+        )}
+      </div>
     </main>
   )
 }
+
 
 
 
