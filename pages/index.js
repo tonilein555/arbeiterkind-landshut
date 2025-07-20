@@ -15,12 +15,23 @@ export default function Page() {
   const [answerInputs, setAnswerInputs] = useState({})
   const [showAdminLogin, setShowAdminLogin] = useState(true)
   const [successMessage, setSuccessMessage] = useState('')
+  const [isDark, setIsDark] = useState(false) // ✅ NEU
 
   const ADMIN_PASSWORD = 'arbeiterkind2025landshut'
 
   useEffect(() => {
     fetchQuestions()
-  }, [admin]) // <- neu: aktualisiere Fragen bei Login
+
+    // ✅ Automatischer Theme-Wechsel
+    const mql = window.matchMedia('(prefers-color-scheme: dark)')
+    const handleChange = (e) => setIsDark(e.matches)
+    setIsDark(mql.matches)
+    mql.addEventListener('change', handleChange)
+
+    return () => {
+      mql.removeEventListener('change', handleChange)
+    }
+  }, [admin])
 
   async function fetchQuestions() {
     let query = supabase
@@ -56,7 +67,6 @@ export default function Page() {
       setNewQuestion('')
       setSuccessMessage('Frage erfolgreich eingereicht!')
       fetchQuestions()
-
       setTimeout(() => setSuccessMessage(''), 4000)
     }
   }
@@ -104,10 +114,6 @@ export default function Page() {
   function handleLogout() {
     setAdmin(false)
   }
-
-  const isDark = typeof window !== 'undefined' &&
-    window.matchMedia &&
-    window.matchMedia('(prefers-color-scheme: dark)').matches
 
   return (
     <main
@@ -341,6 +347,7 @@ export default function Page() {
     </main>
   )
 }
+
 
 
 
