@@ -191,10 +191,7 @@ export default function Page() {
                 <textarea
                   value={answerInputs[q.id] || ''}
                   onChange={(e) =>
-                    setAnswerInputs({
-                      ...answerInputs,
-                      [q.id]: e.target.value,
-                    })
+                    setAnswerInputs({ ...answerInputs, [q.id]: e.target.value })
                   }
                   placeholder="Antwort schreiben..."
                   style={{
@@ -241,7 +238,7 @@ export default function Page() {
         )
       })}
 
-      {/* Admin Login unten rechts mit X-Button */}
+      {/* Admin Login unten rechts */}
       {!admin && showAdminLogin && (
         <div
           style={{
@@ -264,7 +261,7 @@ export default function Page() {
               background: 'none',
               border: 'none',
               color: '#888',
-              fontSize: 18,
+              fontSize: 26,
               cursor: 'pointer',
             }}
             aria-label="Schließen"
@@ -325,6 +322,7 @@ export default function Page() {
     </main>
   )
 }
+
 
 
 
