@@ -266,6 +266,3 @@ export default function Page() {
     </main>
   )
 }
-
-// Trigger redeploy for Vercel – dummy change
-
