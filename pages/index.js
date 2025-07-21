@@ -11,7 +11,7 @@ const CATEGORY_LIST = [
   'Alltag',
   'Ehrenamt',
   'Sonstiges',
-  'Meine Frage betrifft mehrere Kategorien'
+  'Meine Frage betrifft mehrere Kategorien',
 ]
 
 const CATEGORY_COLORS = {
@@ -20,7 +20,7 @@ const CATEGORY_COLORS = {
   Alltag: '#ffc107',
   Ehrenamt: '#6610f2',
   Sonstiges: '#6c757d',
-  'Meine Frage betrifft mehrere Kategorien': '#17a2b8'
+  'Meine Frage betrifft mehrere Kategorien': '#17a2b8',
 }
 
 const supabase = createClient(
@@ -186,7 +186,7 @@ export default function Page() {
       )}
 
       {!admin && (
-        <div style={{ marginBottom: 20, width: '100%', textAlign: 'left' }}>
+        <div style={{ marginBottom: 20, width: '100%' }}>
           <textarea
             value={newQuestion}
             onChange={(e) => setNewQuestion(e.target.value)}
@@ -201,12 +201,9 @@ export default function Page() {
               backgroundColor: theme.boxBackground,
               color: theme.text,
               marginBottom: 10,
-              fontFamily: 'Arial, sans-serif',
             }}
           />
-          <label htmlFor="categorySelect">Kategorie:</label>
           <select
-            id="categorySelect"
             value={category}
             onChange={(e) => setCategory(e.target.value)}
             style={{
@@ -251,13 +248,15 @@ export default function Page() {
             style={{
               width: '100%',
               marginBottom: 20,
-              backgroundColor: '#f2f2f2',
+              backgroundColor: theme.boxBackground,
+              color: theme.text,
               padding: 16,
               borderRadius: 8,
-              boxShadow: '0 0 10px rgba(0,0,0,0.1)',
+              border: `1px solid ${theme.boxBorder}`,
+              boxShadow: isDark ? 'none' : '0 0 10px rgba(0,0,0,0.1)',
             }}
           >
-            <h2 style={{ marginTop: 0 }}>Kategorienübersicht</h2>
+            <h2 style={{ marginTop: 0 }}>📊 Kategorienübersicht</h2>
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead>
                 <tr>
@@ -277,7 +276,7 @@ export default function Page() {
           </div>
 
           <div style={{ width: '100%', marginBottom: 20 }}>
-            <h3>Fragen filtern:</h3>
+            <h3>🧭 Fragen filtern:</h3>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
               <button
                 onClick={() => setFilterCategory(null)}
@@ -493,6 +492,8 @@ export default function Page() {
     </main>
   )
 }
+
+
 
 
 
