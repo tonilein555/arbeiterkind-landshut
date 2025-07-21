@@ -256,7 +256,7 @@ export default function Page() {
               boxShadow: isDark ? 'none' : '0 0 10px rgba(0,0,0,0.1)',
             }}
           >
-            <h2 style={{ marginTop: 0 }}>📊 Kategorienübersicht</h2>
+            <h2 style={{ marginTop: 0 }}>Kategorienübersicht</h2>
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead>
                 <tr>
@@ -276,7 +276,7 @@ export default function Page() {
           </div>
 
           <div style={{ width: '100%', marginBottom: 20 }}>
-            <h3>🧭 Fragen filtern:</h3>
+            <h3>Fragen filtern:</h3>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
               <button
                 onClick={() => setFilterCategory(null)}
