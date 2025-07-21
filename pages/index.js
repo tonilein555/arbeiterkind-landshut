@@ -125,9 +125,10 @@ export default function Page() {
         fontFamily: 'Arial, sans-serif',
       }}
     >
-      <h1 style={{ fontSize: 28, fontWeight: 'bold', textAlign: 'center' }}>
-        Q&amp;A mit ArbeiterKind.de Landshut
-      </h1>
+      
+      <p style={{ textAlign: 'center', marginTop: 10, marginBottom: 20 }}>
+        Stell' uns gerne im nachfolgenden Textfeld Deine Frage(n) und wähle bitte eine passende Kategorie aus. Wir freuen uns auf Deine Frage(n)!
+      </p>
 
       {admin && (
         <div style={{ marginTop: 20, marginBottom: 20 }} aria-label="Admin-Statistik">
