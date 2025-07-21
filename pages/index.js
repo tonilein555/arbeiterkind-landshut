@@ -14,6 +14,15 @@ const CATEGORY_LIST = [
   'Meine Frage betrifft mehrere Kategorien'
 ]
 
+const CATEGORY_COLORS = {
+  Studium: '#007bff',
+  Finanzen: '#28a745',
+  Alltag: '#ffc107',
+  Ehrenamt: '#6610f2',
+  Sonstiges: '#6c757d',
+  'Meine Frage betrifft mehrere Kategorien': '#17a2b8'
+}
+
 const supabase = createClient(
   'https://mzhnxmgftqxbivecgnna.supabase.co',
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im16aG54bWdmdHF4Yml2ZWNnbm5hIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI5NTIwODAsImV4cCI6MjA2ODUyODA4MH0.zfwLmqNxCHO-x33Ys0kRKOZg55r4dhDqysKHnRNk4EM'
@@ -30,6 +39,7 @@ export default function Page() {
   const [successMessage, setSuccessMessage] = useState('')
   const [isDark, setIsDark] = useState(false)
   const [categoryStats, setCategoryStats] = useState({})
+  const [filterCategory, setFilterCategory] = useState(null)
 
   const theme = getTheme(isDark)
   const ADMIN_PASSWORD = 'arbeiterkind2025landshut'
@@ -100,7 +110,6 @@ export default function Page() {
       setTimeout(() => setSuccessMessage(''), 4000)
     }
   }
-
   async function submitAnswer(questionId) {
     const text = answerInputs[questionId]
     if (!text) return
@@ -144,6 +153,10 @@ export default function Page() {
   function handleLogout() {
     setAdmin(false)
   }
+
+  const visibleQuestions = filterCategory
+    ? questions.filter((q) => q.category === filterCategory)
+    : questions
 
   return (
     <main
@@ -233,37 +246,74 @@ export default function Page() {
       )}
 
       {admin && (
-        <div
-          style={{
-            width: '100%',
-            marginBottom: 30,
-            backgroundColor: '#f2f2f2',
-            padding: 16,
-            borderRadius: 8,
-            boxShadow: '0 0 10px rgba(0,0,0,0.1)',
-          }}
-        >
-          <h2 style={{ marginTop: 0 }}>Kategorienübersicht</h2>
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-            <thead>
-              <tr>
-                <th style={{ textAlign: 'left', padding: '6px 0' }}>Kategorie</th>
-                <th style={{ textAlign: 'right', padding: '6px 0' }}>Fragen</th>
-              </tr>
-            </thead>
-            <tbody>
-              {Object.entries(categoryStats).map(([cat, count]) => (
-                <tr key={cat}>
-                  <td style={{ padding: '4px 0' }}>{cat}</td>
-                  <td style={{ padding: '4px 0', textAlign: 'right' }}>{count}</td>
+        <>
+          <div
+            style={{
+              width: '100%',
+              marginBottom: 20,
+              backgroundColor: '#f2f2f2',
+              padding: 16,
+              borderRadius: 8,
+              boxShadow: '0 0 10px rgba(0,0,0,0.1)',
+            }}
+          >
+            <h2 style={{ marginTop: 0 }}>📊 Kategorienübersicht</h2>
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <thead>
+                <tr>
+                  <th style={{ textAlign: 'left', padding: '6px 0' }}>Kategorie</th>
+                  <th style={{ textAlign: 'right', padding: '6px 0' }}>Fragen</th>
                 </tr>
+              </thead>
+              <tbody>
+                {Object.entries(categoryStats).map(([cat, count]) => (
+                  <tr key={cat}>
+                    <td style={{ padding: '4px 0' }}>{cat}</td>
+                    <td style={{ padding: '4px 0', textAlign: 'right' }}>{count}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          <div style={{ width: '100%', marginBottom: 20 }}>
+            <h3>🧭 Fragen filtern:</h3>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+              <button
+                onClick={() => setFilterCategory(null)}
+                style={{
+                  backgroundColor: '#999',
+                  color: '#fff',
+                  border: 'none',
+                  padding: '6px 12px',
+                  borderRadius: 4,
+                  cursor: 'pointer',
+                }}
+              >
+                Alle Kategorien
+              </button>
+              {Object.keys(CATEGORY_COLORS).map((cat) => (
+                <button
+                  key={cat}
+                  onClick={() => setFilterCategory(cat)}
+                  style={{
+                    backgroundColor: CATEGORY_COLORS[cat],
+                    color: '#fff',
+                    border: 'none',
+                    padding: '6px 12px',
+                    borderRadius: 4,
+                    cursor: 'pointer',
+                  }}
+                >
+                  {cat}
+                </button>
               ))}
-            </tbody>
-          </table>
-        </div>
+            </div>
+          </div>
+        </>
       )}
 
-      {questions.map((q) => {
+      {visibleQuestions.map((q) => {
         const answer = q.answers?.[0]
         return (
           <div
@@ -443,6 +493,7 @@ export default function Page() {
     </main>
   )
 }
+
 
 
 
