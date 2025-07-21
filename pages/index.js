@@ -166,9 +166,11 @@ export default function Page() {
         Q&amp;A mit ArbeiterKind.de Landshut
       </h1>
 
-      <p style={{ textAlign: 'center', marginBottom: 20 }}>
-        Stell&#39; uns gerne im nachfolgenden Textfeld Deine Frage(n) und wähle bitte eine passende Kategorie aus. Wir freuen uns auf Deine Frage(n)!
-      </p>
+      {!admin && (
+        <p style={{ textAlign: 'center', marginBottom: 20 }}>
+          Stell&#39; uns gerne im nachfolgenden Textfeld Deine Frage(n) und wähle bitte eine passende Kategorie aus. Wir freuen uns auf Deine Frage(n)!
+        </p>
+      )}
 
       {!admin && (
         <div style={{ marginBottom: 20, width: '100%', textAlign: 'left' }}>
@@ -231,15 +233,33 @@ export default function Page() {
       )}
 
       {admin && (
-        <div style={{ width: '100%', marginBottom: 30 }}>
-          <h2>Kategorienübersicht</h2>
-          <ul>
-            {Object.entries(categoryStats).map(([cat, count]) => (
-              <li key={cat}>
-                <strong>{cat}</strong>: {count}
-              </li>
-            ))}
-          </ul>
+        <div
+          style={{
+            width: '100%',
+            marginBottom: 30,
+            backgroundColor: '#f2f2f2',
+            padding: 16,
+            borderRadius: 8,
+            boxShadow: '0 0 10px rgba(0,0,0,0.1)',
+          }}
+        >
+          <h2 style={{ marginTop: 0 }}>📊 Kategorienübersicht</h2>
+          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <thead>
+              <tr>
+                <th style={{ textAlign: 'left', padding: '6px 0' }}>Kategorie</th>
+                <th style={{ textAlign: 'right', padding: '6px 0' }}>Fragen</th>
+              </tr>
+            </thead>
+            <tbody>
+              {Object.entries(categoryStats).map(([cat, count]) => (
+                <tr key={cat}>
+                  <td style={{ padding: '4px 0' }}>{cat}</td>
+                  <td style={{ padding: '4px 0', textAlign: 'right' }}>{count}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       )}
 
@@ -423,6 +443,7 @@ export default function Page() {
     </main>
   )
 }
+
 
 
 
