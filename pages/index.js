@@ -1,6 +1,8 @@
 'use client'
+
 import { useEffect, useState } from 'react'
 import { createClient } from '@supabase/supabase-js'
+import { getTheme } from '../theme'
 
 const supabase = createClient(
   'https://mzhnxmgftqxbivecgnna.supabase.co',
@@ -17,6 +19,7 @@ export default function Page() {
   const [successMessage, setSuccessMessage] = useState('')
   const [isDark, setIsDark] = useState(false)
 
+  const theme = getTheme(isDark)
   const ADMIN_PASSWORD = 'arbeiterkind2025landshut'
 
   useEffect(() => {
@@ -122,8 +125,8 @@ export default function Page() {
   return (
     <main
       style={{
-        background: isDark ? '#000' : '#fff',
-        color: isDark ? '#fff' : '#000',
+        background: theme.background,
+        color: theme.text,
         minHeight: '100vh',
         maxWidth: 600,
         margin: '0 auto',
@@ -155,21 +158,19 @@ export default function Page() {
               padding: 10,
               fontSize: 16,
               borderRadius: 4,
-              border: '1px solid #ccc',
-              backgroundColor: isDark ? '#111' : '#eee',
-              color: isDark ? '#fff' : '#000',
+              border: `1px solid ${theme.boxBorder}`,
+              backgroundColor: theme.boxBackground,
+              color: theme.text,
               marginBottom: 10,
-              '::placeholder': {
-                color: isDark ? '#aaa' : '#888',
-              },
+              fontFamily: 'Arial, sans-serif',
             }}
           />
           <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
             <button
               onClick={submitQuestion}
               style={{
-                backgroundColor: '#007bff',
-                color: 'white',
+                backgroundColor: theme.buttonBackground,
+                color: theme.buttonText,
                 border: 'none',
                 padding: '10px 20px',
                 borderRadius: 4,
@@ -191,34 +192,35 @@ export default function Page() {
           <div
             key={q.id}
             style={{
-              border: '1px solid #444',
+              border: `1px solid ${theme.boxBorder}`,
               borderRadius: 6,
               padding: 12,
               marginBottom: 20,
               width: '100%',
-              backgroundColor: isDark ? '#000' : '#fb0000ff',
+              backgroundColor: theme.boxBackground,
             }}
           >
             <p style={{ fontWeight: 'bold' }}>{q.text}</p>
-            <p style={{ fontSize: 12, color: '#888' }}>
+            <p style={{ fontSize: 12, color: theme.placeholder }}>
               Eingereicht am: {new Date(q.created_at).toLocaleDateString()}
             </p>
             {answer ? (
               <div
                 style={{
-                  backgroundColor: isDark ? '#111' : '#e5e5e5',
+                  backgroundColor: theme.answerBackground,
                   padding: 10,
                   borderRadius: 4,
                   marginTop: 8,
-                  color: isDark ? '#fff' : '#e5e5e5',
-                  border: isDark ? '1px solid #444' : '1px solid #ccc',
+                  color: theme.answerText,
+                  border: `1px solid ${theme.boxBorder}`,
+                  fontFamily: 'Arial, sans-serif',
                 }}
               >
                 {answer.text}
                 <p
                   style={{
                     fontSize: 12,
-                    color: isDark ? '#ccc' : '#666',
+                    color: theme.placeholder,
                     marginTop: 6,
                   }}
                 >
@@ -243,9 +245,9 @@ export default function Page() {
                     marginTop: 10,
                     borderRadius: 4,
                     padding: 8,
-                    backgroundColor: isDark ? '#111' : '#eee',
-                    color: isDark ? 'white' : 'black',
-                    border: '1px solid #555',
+                    backgroundColor: theme.boxBackground,
+                    color: theme.text,
+                    border: `1px solid ${theme.boxBorder}`,
                   }}
                 />
                 <button
@@ -287,11 +289,12 @@ export default function Page() {
             position: 'fixed',
             bottom: 20,
             right: 20,
-            backgroundColor: isDark ? '#222' : '#f5f5f5',
+            backgroundColor: theme.adminBoxBackground,
             padding: 16,
             borderRadius: 8,
             width: 260,
             boxShadow: '0 0 10px rgba(0,0,0,0.3)',
+            color: theme.adminText,
           }}
         >
           <button
@@ -302,7 +305,7 @@ export default function Page() {
               right: 8,
               background: 'none',
               border: 'none',
-              color: '#888',
+              color: theme.placeholder,
               fontSize: 26,
               cursor: 'pointer',
             }}
@@ -320,9 +323,9 @@ export default function Page() {
               width: '100%',
               padding: 8,
               marginBottom: 8,
-              backgroundColor: isDark ? '#111' : '#fff',
-              border: '1px solid #555',
-              color: isDark ? 'white' : 'black',
+              backgroundColor: theme.background,
+              border: `1px solid ${theme.boxBorder}`,
+              color: theme.text,
               borderRadius: 4,
             }}
           />
@@ -364,3 +367,4 @@ export default function Page() {
     </main>
   )
 }
+
