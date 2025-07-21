@@ -4,7 +4,15 @@ import { useEffect, useState } from 'react'
 import { createClient } from '@supabase/supabase-js'
 import { getTheme } from '../theme'
 
-const CATEGORY_LIST = ['Studium', 'Finanzen', 'Alltag', 'Ehrenamt', 'Sonstiges', 'Meine Frage betrifft mehrere Kategorien']
+const CATEGORY_LIST = [
+  'Kategorie auswählen …',
+  'Studium',
+  'Finanzen',
+  'Alltag',
+  'Ehrenamt',
+  'Sonstiges',
+  'Meine Frage betrifft mehrere Kategorien'
+]
 
 const supabase = createClient(
   'https://mzhnxmgftqxbivecgnna.supabase.co',
@@ -39,9 +47,7 @@ export default function Page() {
     document.body.style.backgroundColor = mql.matches ? '#000' : '#fff'
 
     mql.addEventListener('change', handleChange)
-    return () => {
-      mql.removeEventListener('change', handleChange)
-    }
+    return () => mql.removeEventListener('change', handleChange)
   }, [admin])
 
   async function fetchQuestions() {
@@ -73,6 +79,10 @@ export default function Page() {
 
   async function submitQuestion() {
     if (!newQuestion.trim()) return
+    if (category === 'Kategorie auswählen …') {
+      alert('Bitte wähle eine Kategorie aus.')
+      return
+    }
 
     const { error } = await supabase.from('questions').insert({
       text: newQuestion,
@@ -260,7 +270,6 @@ export default function Page() {
                   marginTop: 8,
                   color: theme.answerText,
                   border: `1px solid ${theme.boxBorder}`,
-                  fontFamily: 'Arial, sans-serif',
                 }}
               >
                 {answer.text}
@@ -414,5 +423,7 @@ export default function Page() {
     </main>
   )
 }
+
+
 
 
