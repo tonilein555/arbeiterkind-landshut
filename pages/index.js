@@ -18,26 +18,22 @@ export default function Page() {
   const [showAdminLogin, setShowAdminLogin] = useState(true)
   const [successMessage, setSuccessMessage] = useState('')
   const [isDark, setIsDark] = useState(false)
+  const [stats, setStats] = useState({ total: 0, open: 0, answered: 0 })
 
   const theme = getTheme(isDark)
   const ADMIN_PASSWORD = 'arbeiterkind2025landshut'
 
   useEffect(() => {
     fetchQuestions()
-
     const mql = window.matchMedia('(prefers-color-scheme: dark)')
     const handleChange = (e) => {
       setIsDark(e.matches)
       document.body.style.backgroundColor = e.matches ? '#000' : '#fff'
     }
-
     setIsDark(mql.matches)
     document.body.style.backgroundColor = mql.matches ? '#000' : '#fff'
-
     mql.addEventListener('change', handleChange)
-    return () => {
-      mql.removeEventListener('change', handleChange)
-    }
+    return () => mql.removeEventListener('change', handleChange)
   }, [admin])
 
   async function fetchQuestions() {
@@ -53,24 +49,21 @@ export default function Page() {
 
     const { data, error } = await query
 
-    if (error) {
-      console.error('Fehler beim Laden', error)
-    } else {
+    if (!error && data) {
       setQuestions(data)
+      if (admin) {
+        const total = data.length
+        const answered = data.filter((q) => q.answers && q.answers.length > 0).length
+        const open = total - answered
+        setStats({ total, open, answered })
+      }
     }
   }
 
   async function submitQuestion() {
     if (!newQuestion.trim()) return
-
-    const { error } = await supabase.from('questions').insert({
-      text: newQuestion,
-      hidden: false,
-    })
-
-    if (error) {
-      console.error('Fehler beim Senden der Frage', error)
-    } else {
+    const { error } = await supabase.from('questions').insert({ text: newQuestion, hidden: false })
+    if (!error) {
       setNewQuestion('')
       setSuccessMessage('Frage erfolgreich eingereicht!')
       fetchQuestions()
@@ -81,31 +74,16 @@ export default function Page() {
   async function submitAnswer(questionId) {
     const text = answerInputs[questionId]
     if (!text) return
-
-    const { error } = await supabase.from('answers').insert({
-      text,
-      question_id: questionId,
-    })
-
-    if (error) {
-      console.error('Fehler beim Senden der Antwort', error)
-    } else {
+    const { error } = await supabase.from('answers').insert({ text, question_id: questionId })
+    if (!error) {
       setAnswerInputs({ ...answerInputs, [questionId]: '' })
       fetchQuestions()
     }
   }
 
   async function hideQuestion(id) {
-    const { error } = await supabase
-      .from('questions')
-      .update({ hidden: true })
-      .eq('id', id)
-
-    if (error) {
-      console.error('Fehler beim Verstecken', error)
-    } else {
-      fetchQuestions()
-    }
+    const { error } = await supabase.from('questions').update({ hidden: true }).eq('id', id)
+    if (!error) fetchQuestions()
   }
 
   function handleLogin() {
@@ -133,52 +111,52 @@ export default function Page() {
         padding: 20,
         paddingTop: 60,
         fontFamily: 'Arial, sans-serif',
-        position: 'relative',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
       }}
     >
       <h1 style={{ fontSize: 28, fontWeight: 'bold', textAlign: 'center' }}>
         Q&amp;A mit ArbeiterKind.de Landshut
       </h1>
-      <p style={{ textAlign: 'center', marginBottom: 20 }}>
-        Stell&#39; uns gerne hier Deine Fragen. Wir freuen uns darüber!
-      </p>
+
+      {admin && (
+        <div style={{ marginTop: 20, marginBottom: 20 }} aria-label="Admin-Statistik">
+          <h2 style={{ fontSize: 18, marginBottom: 8 }}>📊 Admin-Dashboard</h2>
+          <ul>
+            <li>✉️ Fragen insgesamt: {stats.total}</li>
+            <li>🕓 Offene Fragen: {stats.open}</li>
+            <li>✅ Beantwortete Fragen: {stats.answered}</li>
+          </ul>
+        </div>
+      )}
 
       {!admin && (
-        <div style={{ marginBottom: 20, width: '100%', textAlign: 'left' }}>
+        <div style={{ marginBottom: 20, width: '100%' }}>
+          <label htmlFor="questionInput" style={{ display: 'none' }}>Frage eingeben</label>
           <textarea
+            id="questionInput"
             value={newQuestion}
             onChange={(e) => setNewQuestion(e.target.value)}
             style={{
-              width: '100%',
-              height: 80,
-              padding: 10,
-              fontSize: 16,
-              borderRadius: 4,
+              width: '100%', height: 80, padding: 10,
+              fontSize: 16, borderRadius: 4,
               border: `1px solid ${theme.boxBorder}`,
               backgroundColor: theme.boxBackground,
               color: theme.text,
-              marginBottom: 10,
-              fontFamily: 'Arial, sans-serif',
+              marginBottom: 10
             }}
+            aria-label="Fragetext eingeben"
           />
-          <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
-            <button
-              onClick={submitQuestion}
-              style={{
-                backgroundColor: theme.buttonBackground,
-                color: theme.buttonText,
-                border: 'none',
-                padding: '10px 20px',
-                borderRadius: 4,
-                cursor: 'pointer',
-              }}
-            >
-              Frage absenden
-            </button>
-          </div>
+          <button
+            onClick={submitQuestion}
+            style={{
+              backgroundColor: theme.buttonBackground,
+              color: theme.buttonText,
+              padding: '10px 20px', border: 'none',
+              borderRadius: 4, cursor: 'pointer'
+            }}
+            aria-label="Frage absenden"
+          >
+            Frage absenden
+          </button>
           {successMessage && (
             <p style={{ color: 'green', marginTop: 10 }}>{successMessage}</p>
           )}
@@ -192,11 +170,9 @@ export default function Page() {
             key={q.id}
             style={{
               border: `1px solid ${theme.boxBorder}`,
-              borderRadius: 6,
-              padding: 12,
-              marginBottom: 20,
-              width: '100%',
-              backgroundColor: theme.boxBackground,
+              borderRadius: 6, padding: 12,
+              marginBottom: 20, width: '100%',
+              backgroundColor: theme.boxBackground
             }}
           >
             <p style={{ fontWeight: 'bold' }}>{q.text}</p>
@@ -207,72 +183,43 @@ export default function Page() {
               <div
                 style={{
                   backgroundColor: theme.answerBackground,
-                  padding: 10,
-                  borderRadius: 4,
-                  marginTop: 8,
-                  color: theme.answerText,
-                  border: `1px solid ${theme.boxBorder}`,
-                  fontFamily: 'Arial, sans-serif',
+                  padding: 10, borderRadius: 4, marginTop: 8,
+                  color: theme.answerText, border: `1px solid ${theme.boxBorder}`
                 }}
               >
                 {answer.text}
-                <p
-                  style={{
-                    fontSize: 12,
-                    color: theme.placeholder,
-                    marginTop: 6,
-                  }}
-                >
-                  Beantwortet am:{' '}
-                  {new Date(answer.created_at).toLocaleDateString()}
+                <p style={{ fontSize: 12, color: theme.placeholder, marginTop: 6 }}>
+                  Beantwortet am: {new Date(answer.created_at).toLocaleDateString()}
                 </p>
               </div>
             ) : admin ? (
               <>
+                <label htmlFor={`answer-${q.id}`} style={{ display: 'none' }}>Antwort schreiben</label>
                 <textarea
+                  id={`answer-${q.id}`}
                   value={answerInputs[q.id] || ''}
-                  onChange={(e) =>
-                    setAnswerInputs({
-                      ...answerInputs,
-                      [q.id]: e.target.value,
-                    })
-                  }
-                  placeholder="Antwort schreiben..."
+                  onChange={(e) => setAnswerInputs({ ...answerInputs, [q.id]: e.target.value })}
                   style={{
-                    width: '100%',
-                    height: 60,
-                    marginTop: 10,
-                    borderRadius: 4,
-                    padding: 8,
-                    backgroundColor: theme.boxBackground,
-                    color: theme.text,
-                    border: `1px solid ${theme.boxBorder}`,
+                    width: '100%', height: 60, marginTop: 10, borderRadius: 4, padding: 8,
+                    backgroundColor: theme.boxBackground, color: theme.text,
+                    border: `1px solid ${theme.boxBorder}`
                   }}
+                  aria-label="Antwort schreiben"
                 />
                 <button
                   onClick={() => submitAnswer(q.id)}
                   style={{
-                    marginTop: 8,
-                    backgroundColor: 'green',
-                    color: 'white',
-                    padding: '8px 16px',
-                    border: 'none',
-                    borderRadius: 4,
-                    cursor: 'pointer',
+                    marginTop: 8, backgroundColor: 'green', color: 'white',
+                    padding: '8px 16px', border: 'none', borderRadius: 4, cursor: 'pointer'
                   }}
+                  aria-label="Antwort senden"
                 >
                   Antwort senden
                 </button>
                 <button
                   onClick={() => hideQuestion(q.id)}
-                  style={{
-                    float: 'right',
-                    marginTop: 8,
-                    color: 'red',
-                    background: 'none',
-                    border: 'none',
-                    cursor: 'pointer',
-                  }}
+                  style={{ float: 'right', marginTop: 8, color: 'red', background: 'none', border: 'none', cursor: 'pointer' }}
+                  aria-label="Frage verstecken"
                 >
                   Verstecken
                 </button>
@@ -285,60 +232,29 @@ export default function Page() {
       {!admin && showAdminLogin && (
         <div
           style={{
-            position: 'fixed',
-            bottom: 20,
-            right: 20,
+            position: 'fixed', bottom: 20, right: 20,
             backgroundColor: theme.adminBoxBackground,
-            padding: 16,
-            borderRadius: 8,
-            width: 260,
-            boxShadow: '0 0 10px rgba(0,0,0,0.3)',
-            color: theme.adminText,
+            padding: 16, borderRadius: 8, width: 260,
+            boxShadow: '0 0 10px rgba(0,0,0,0.3)', color: theme.adminText
           }}
         >
           <button
             onClick={() => setShowAdminLogin(false)}
-            style={{
-              position: 'absolute',
-              top: 4,
-              right: 8,
-              background: 'none',
-              border: 'none',
-              color: theme.placeholder,
-              fontSize: 26,
-              cursor: 'pointer',
-            }}
-            aria-label="Schließen"
-          >
-            ×
-          </button>
-
+            style={{ position: 'absolute', top: 4, right: 8, background: 'none', border: 'none', color: theme.placeholder, fontSize: 26, cursor: 'pointer' }}
+            aria-label="Login schließen"
+          >×</button>
           <input
             type="password"
             value={passwordInput}
             onChange={(e) => setPasswordInput(e.target.value)}
             placeholder="Admin-Passwort"
-            style={{
-              width: '100%',
-              padding: 8,
-              marginBottom: 8,
-              backgroundColor: theme.background,
-              border: `1px solid ${theme.boxBorder}`,
-              color: theme.text,
-              borderRadius: 4,
-            }}
+            style={{ width: '100%', padding: 8, marginBottom: 8, backgroundColor: theme.background, border: `1px solid ${theme.boxBorder}`, color: theme.text, borderRadius: 4 }}
+            aria-label="Admin-Passwort eingeben"
           />
           <button
             onClick={handleLogin}
-            style={{
-              backgroundColor: 'mediumorchid',
-              color: 'white',
-              width: '100%',
-              padding: 10,
-              border: 'none',
-              borderRadius: 4,
-              cursor: 'pointer',
-            }}
+            style={{ backgroundColor: 'mediumorchid', color: 'white', width: '100%', padding: 10, border: 'none', borderRadius: 4, cursor: 'pointer' }}
+            aria-label="Admin Login senden"
           >
             Als Admin einloggen
           </button>
@@ -348,17 +264,8 @@ export default function Page() {
       {admin && (
         <button
           onClick={handleLogout}
-          style={{
-            position: 'fixed',
-            top: 20,
-            right: 20,
-            backgroundColor: '#444',
-            color: 'white',
-            padding: '8px 16px',
-            border: 'none',
-            borderRadius: 4,
-            cursor: 'pointer',
-          }}
+          style={{ position: 'fixed', top: 20, right: 20, backgroundColor: '#444', color: 'white', padding: '8px 16px', border: 'none', borderRadius: 4, cursor: 'pointer' }}
+          aria-label="Abmelden"
         >
           Logout
         </button>
@@ -366,4 +273,5 @@ export default function Page() {
     </main>
   )
 }
+
 
