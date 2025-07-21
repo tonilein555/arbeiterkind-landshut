@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { createClient } from '@supabase/supabase-js'
 import { getTheme } from '../theme'
 
-const CATEGORY_LIST = ['🎓 Studium', '💰 Finanzen', '🏠 Alltag', '❓ Sonstiges']
+const CATEGORY_LIST = ['Studium', 'Finanzen', 'Alltag', 'Sonstiges']
 
 const supabase = createClient(
   'https://mzhnxmgftqxbivecgnna.supabase.co',
@@ -62,7 +62,6 @@ export default function Page() {
     } else {
       setQuestions(data)
 
-      // Kategorie-Auswertung für Dashboard
       const stats = {}
       data.forEach((q) => {
         const cat = q.category || 'Ohne Kategorie'
@@ -250,8 +249,7 @@ export default function Page() {
           >
             <p style={{ fontWeight: 'bold' }}>{q.text}</p>
             <p style={{ fontSize: 12, color: theme.placeholder }}>
-              Eingereicht am: {new Date(q.created_at).toLocaleDateString()} •{' '}
-              Kategorie: {q.category || '–'}
+              Eingereicht am: {new Date(q.created_at).toLocaleDateString()} • Kategorie: {q.category || '–'}
             </p>
             {answer ? (
               <div
@@ -416,4 +414,5 @@ export default function Page() {
     </main>
   )
 }
+
 
