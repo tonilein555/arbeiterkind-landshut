@@ -389,19 +389,6 @@ export default function Page() {
                 >
                   Antwort senden
                 </button>
-                <button
-                  onClick={() => hideQuestion(q.id)}
-                  style={{
-                    float: 'right',
-                    marginTop: 8,
-                    color: 'red',
-                    background: 'none',
-                    border: 'none',
-                    cursor: 'pointer',
-                  }}
-                >
-                  Verstecken
-                </button>
               </>
             ) : null}
           </div>
