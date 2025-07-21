@@ -243,7 +243,7 @@ export default function Page() {
             boxShadow: '0 0 10px rgba(0,0,0,0.1)',
           }}
         >
-          <h2 style={{ marginTop: 0 }}>📊 Kategorienübersicht</h2>
+          <h2 style={{ marginTop: 0 }}>Kategorienübersicht</h2>
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
               <tr>
