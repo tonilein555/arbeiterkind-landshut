@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { createClient } from '@supabase/supabase-js'
 import { getTheme } from '../theme'
 
-const CATEGORY_LIST = ['Studium', 'Finanzen', 'Alltag', 'Sonstiges']
+const CATEGORY_LIST = ['Studium', 'Finanzen', 'Alltag', 'Ehrenamt', 'Sonstiges', 'Meine Frage betrifft mehrere Kategorien']
 
 const supabase = createClient(
   'https://mzhnxmgftqxbivecgnna.supabase.co',
