@@ -151,7 +151,6 @@ export default function Page() {
           <textarea
             value={newQuestion}
             onChange={(e) => setNewQuestion(e.target.value)}
-            placeholder="Deine Frage..."
             style={{
               width: '100%',
               height: 80,
