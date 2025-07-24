@@ -1,40 +1,44 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/pages/api-reference/create-next-app).
+# 🎓 Arbeiterkind Landshut - Anonymes Fragetool
 
-## Getting Started
+Ein anonymes, niedrigschwelliges Fragetool für Schüler:innen und Studierende aus nicht-akademischen Familien.  
+Entwickelt für die Ortsgruppe Landshut von [Arbeiterkind.de](https://arbeiterkind.de), um Bildungsberatung einfacher zugänglich zu machen.
 
-First, run the development server:
+## ✨ Features
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+- Fragen stellen – anonym, ohne Registrierung
+- Auswahl aus vordefinierten Kategorien
+- Antworten werden öffentlich (aber anonymisiert) angezeigt
+- Supabase als Backend (Auth + Datenbank)
+- Minimalistisch, mobiloptimiert, schnell
+- Technisch unabhängig und komplett ehrenamtlich entwickelt
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🧠 Warum?
 
-You can start editing the page by modifying `pages/index.js`. The page auto-updates as you edit the file.
+Viele Erstakademiker:innen zögern, Fragen zum Studium zu stellen - aus Unsicherheit oder Angst, etwas „Falsches“ zu fragen.  
+Dieses Tool senkt die Hemmschwelle, ermöglicht asynchrone, anonyme Beratung und macht Antworten für alle sichtbar - ohne persönliche Daten preiszugeben.
 
-[API routes](https://nextjs.org/docs/pages/building-your-application/routing/api-routes) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.js`.
+## 📦 Tech Stack
 
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/pages/building-your-application/routing/api-routes) instead of React pages.
+- HTML / CSS / JavaScript (Vanilla)
+- [Supabase](https://supabase.com) - Auth, Datenbank, API
+- [Vercel](https://vercel.com) - Hosting & Deployment
 
-This project uses [`next/font`](https://nextjs.org/docs/pages/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 🚀 Selbst ausprobieren
 
-## Learn More
+Aktuell ist das Projekt **nicht frei nutzbar oder veränderbar**.  
+Wenn du das Tool ebenfalls einsetzen oder anpassen möchtest, kontaktiere mich bitte - ich freue mich über sinnvolle Anfragen und Kooperationen!
 
-To learn more about Next.js, take a look at the following resources:
+## 📄 Lizenz
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn-pages-router) - an interactive Next.js tutorial.
+Dieses Projekt ist **nicht öffentlich lizenziert oder frei verwendbar**.  
+Alle Rechte liegen bei [tonilein555](https://github.com/tonilein555).  
+→ **Keine Weiterverwendung, kein Fork, keine Veränderung ohne ausdrückliche Zustimmung.**
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+📬 Wenn du das Tool für deine Ortsgruppe, Bildungsinitiative oder ein ähnliches Projekt einsetzen möchtest:  
+**Schreib mir einfach über GitHub oder der E-Mail: landshut@arbeiterkind.de. Ich bin offen für Kooperationen.**
 
-## Deploy on Vercel
+## 👤 Autorin
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/pages/building-your-application/deploying) for more details.
+**[tonilein555](https://github.com/tonilein555)**  
+Autistisch & hochbegabt - engagiert bei [Arbeiterkind.de](https://arbeiterkind.de) (Ortsgruppe Landshut)  
+Projekt entstand an einem Wochenende - mit Herz, Code & sozialem Anliegen ❤️
