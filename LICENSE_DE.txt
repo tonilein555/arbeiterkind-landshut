@@ -1,5 +1,3 @@
-[English version] (LICENSE_EN.txt)
-
 Copyright (c) 2025 tonilein555
 
 Alle Rechte vorbehalten.
