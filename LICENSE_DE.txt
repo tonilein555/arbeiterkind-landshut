@@ -1,3 +1,5 @@
+for the English verison read below
+
 Copyright (c) 2025 tonilein555
 
 Alle Rechte vorbehalten.
@@ -12,3 +14,23 @@ Kontakt für Anfragen:
 -> Bitte über GitHub oder persönlich Kontakt aufnehmen.
 
 Danke für deinen Respekt gegenüber ehrenamtlicher Arbeit und digitalem Engagement.
+
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+Copyright (c) 2024 Tonilein555
+
+All rights reserved.
+
+This project was developed voluntarily by Tonilein555. It may NOT be used, copied, modified, or redistributed – in whole or in part – without prior written permission from the author.
+
+Use of the source code or the concept is only allowed after explicit approval.
+
+Commercial use is strictly prohibited.
+
+Contact for inquiries:  
+→ Please reach out via GitHub or directly.
+
+Thank you for respecting volunteer work and digital social innovation.
+
