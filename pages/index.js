@@ -181,7 +181,7 @@ export default function Page() {
 
       {!admin && (
         <p style={{ textAlign: 'center', marginBottom: 20 }}>
-          Stell&#39; uns gerne im nachfolgenden Textfeld Deine Frage(n) und wähle bitte ein passendes Thema aus. Wir freuen uns auf Deine Frage(n)!
+          Stell&#39; uns gerne im nachfolgenden Textfeld deine Frage(n) und wähle bitte ein passendes Thema aus. Wir freuen uns auf deine Frage(n)!
         </p>
       )}
 
