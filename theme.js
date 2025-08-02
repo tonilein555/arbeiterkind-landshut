@@ -12,6 +12,7 @@ const lightTheme = {
   buttonText: '#ffffff',
   adminBoxBackground: '#f5f5f5',
   adminText: '#000000',
+  link: '#007bff',
 }
 
 const darkTheme = {
@@ -26,7 +27,7 @@ const darkTheme = {
   buttonText: '#ffffff',
   adminBoxBackground: '#222222',
   adminText: '#ffffff',
+  link: '#4da3ff',
 }
 
 export const getTheme = (isDark) => (isDark ? darkTheme : lightTheme)
-

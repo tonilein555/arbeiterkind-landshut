@@ -476,6 +476,31 @@ export default function Page() {
           Logout
         </button>
       )}
+<div
+  style={{
+    marginTop: 40,
+    padding: 20,
+    borderRadius: 8,
+    backgroundColor: theme.boxBackground,
+    border: `1px solid ${theme.boxBorder}`,
+    width: '100%',
+    textAlign: 'center',
+    color: theme.text,
+    fontSize: 14,
+  }}
+>
+  <h3 style={{ marginBottom: 10 }}>Kontakt</h3>
+  <p>
+    Hast du Fragen oder Anregungen? Kontaktiere uns gerne per E-Mail an{' '}
+    <a
+      href="mailto:landshut@arbeiterkind.de"
+      style={{ color: theme.link, textDecoration: 'none' }}
+    >
+      landshut@arbeiterkind.de
+    </a>
+    .
+  </p>
+</div>
     </main>
   )
 }
