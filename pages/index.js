@@ -289,7 +289,7 @@ export default function Page() {
                   cursor: 'pointer',
                 }}
               >
-                Alle Themen
+                Alle Fragen anzeigen
               </button>
               {Object.keys(CATEGORY_COLORS).map((cat) => (
                 <button
