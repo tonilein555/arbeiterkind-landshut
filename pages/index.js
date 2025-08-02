@@ -256,11 +256,11 @@ export default function Page() {
               boxShadow: isDark ? 'none' : '0 0 10px rgba(0,0,0,0.1)',
             }}
           >
-            <h2 style={{ marginTop: 0 }}>Kategorienübersicht</h2>
+            <h2 style={{ marginTop: 0 }}>Themenübersicht</h2>
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead>
                 <tr>
-                  <th style={{ textAlign: 'left', padding: '6px 0' }}>Kategorie</th>
+                  <th style={{ textAlign: 'left', padding: '6px 0' }}>Themen</th>
                   <th style={{ textAlign: 'right', padding: '6px 0' }}>Fragen</th>
                 </tr>
               </thead>
@@ -289,7 +289,7 @@ export default function Page() {
                   cursor: 'pointer',
                 }}
               >
-                Alle Kategorien
+                Alle Themen
               </button>
               {Object.keys(CATEGORY_COLORS).map((cat) => (
                 <button
@@ -328,7 +328,7 @@ export default function Page() {
           >
             <p style={{ fontWeight: 'bold' }}>{q.text}</p>
             <p style={{ fontSize: 12, color: theme.placeholder }}>
-              Eingereicht am: {new Date(q.created_at).toLocaleDateString()} • Kategorie: {q.category || '–'}
+              Eingereicht am: {new Date(q.created_at).toLocaleDateString()} • Thema: {q.category || '–'}
             </p>
             {answer ? (
               <div
