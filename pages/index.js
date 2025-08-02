@@ -5,13 +5,13 @@ import { createClient } from '@supabase/supabase-js'
 import { getTheme } from '../theme'
 
 const CATEGORY_LIST = [
-  'Kategorie auswählen …',
+  'Thema auswählen …',
   'Studium',
   'Finanzen',
   'Alltag',
   'Ehrenamt',
   'Sonstiges',
-  'Meine Frage betrifft mehrere Kategorien',
+  'Meine Frage betrifft mehrere Themen',
 ]
 
 const CATEGORY_COLORS = {
@@ -20,7 +20,7 @@ const CATEGORY_COLORS = {
   Alltag: '#ffc107',
   Ehrenamt: '#6610f2',
   Sonstiges: '#6c757d',
-  'Meine Frage betrifft mehrere Kategorien': '#17a2b8',
+  'Meine Frage betrifft mehrere Themen': '#17a2b8',
 }
 
 const supabase = createClient(
@@ -80,7 +80,7 @@ export default function Page() {
 
       const stats = {}
       data.forEach((q) => {
-        const cat = q.category || 'Ohne Kategorie'
+        const cat = q.category || 'Ohne Thema'
         stats[cat] = (stats[cat] || 0) + 1
       })
       setCategoryStats(stats)
@@ -89,8 +89,8 @@ export default function Page() {
 
   async function submitQuestion() {
     if (!newQuestion.trim()) return
-    if (category === 'Kategorie auswählen …') {
-      alert('Bitte wähle eine Kategorie aus.')
+    if (category === 'Thema auswählen …') {
+      alert('Bitte wähle ein Thema aus.')
       return
     }
 
@@ -181,7 +181,7 @@ export default function Page() {
 
       {!admin && (
         <p style={{ textAlign: 'center', marginBottom: 20 }}>
-          Stell&#39; uns gerne im nachfolgenden Textfeld Deine Frage(n) und wähle bitte eine passende Kategorie aus. Wir freuen uns auf Deine Frage(n)!
+          Stell&#39; uns gerne im nachfolgenden Textfeld Deine Frage(n) und wähle bitte ein passendes Thema aus. Wir freuen uns auf Deine Frage(n)!
         </p>
       )}
 
@@ -479,11 +479,3 @@ export default function Page() {
     </main>
   )
 }
-
-
-
-
-
-
-
-
