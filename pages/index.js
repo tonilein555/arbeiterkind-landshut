@@ -163,9 +163,11 @@ export default function Page() {
   }
 }
 
-  function handleLogout() {
-    setAdmin(false)
-  }
+  async function handleLogout() {
+  await fetch("/api/admin-logout", { method: "POST" }).catch(() => {});
+  setAdmin(false);
+  setShowAdminLogin(true);
+}
 
   const visibleQuestions = filterCategory
     ? questions.filter((q) => q.category === filterCategory)
