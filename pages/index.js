@@ -146,15 +146,22 @@ export default function Page() {
     }
   }
 
-  function handleLogin() {
-    if (passwordInput === ADMIN_PASSWORD) {
-      setAdmin(true)
-      setPasswordInput('')
-      setShowAdminLogin(false)
-    } else {
-      alert('Falsches Passwort')
-    }
+  async function handleLogin() {
+  const r = await fetch("/api/admin-login", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ password: passwordInput }),
+  });
+
+  if (r.ok) {
+    setAdmin(true);
+    setPasswordInput("");
+    setShowAdminLogin(false);
+    fetchQuestions();
+  } else {
+    alert("Falsches Passwort");
   }
+}
 
   function handleLogout() {
     setAdmin(false)
